@@ -1,8 +1,8 @@
-#include "engine.h"
-#include "buttons.h"
-#include "sonar.h"
-#include "grapper.h"
-#include "linesensor.h"
+#include "src/engine.hpp"
+#include "src/buttons.hpp"
+#include "src/sonar.hpp"
+#include "src/grapper.hpp"
+#include "src/linesensor.hpp"
 
 char* lineDirection = "none";
 long nextLineDetection = millis();
