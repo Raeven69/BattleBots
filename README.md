@@ -1,5 +1,5 @@
 # BeunBot
-Code for a tiny robot that is dikke beun
+Code for three tiny robots that are dikke beun.
 
 ## Requirements
 - Arduino IDE or Visual Studio Code with the Arduino extension.
@@ -7,17 +7,18 @@ Code for a tiny robot that is dikke beun
 - [The QTRSensors Library](https://github.com/pololu/qtr-sensors-arduino)
 
 ## Installation
-1. Clone this repository
+1. Select the branch for which BattleBot you want to use.
+2. Clone the repository
     ```
-    git clone https://github.com/Raeven69/BeunBot
+    git clone https://github.com/Raeven69/BattleBots/tree/{branch}
     ```
-2. Navigate to the folder
+3. Navigate to the folder
     ```
-    cd BeunBot
+    cd BattleBots-{branch}
     ```
-3.  - If you're using Visual Studio Code with the Arduino extension, simply create a folder called ".vscode" and move the arduino.json file into the newly created folder. Make sure to select your serial port in the bottom right corner before uploading.
-    - If you're using the Arduino IDE, open the tools dropdown and set board to Arduino NANO, processor to ATmega328P (Old Bootloader) and make sure that the programmer is set to AVRISP mkII. Also make sure to select your port before uploading.
-4. Open main.ino and press upload after connecting the robot.
+4.  - If you're using Visual Studio Code with the Arduino extension, simply create a folder called ".vscode" and move the arduino.json file into the newly created folder. Make sure to select your serial port in the bottom right corner before uploading.
+    - If you're using the Arduino IDE, open the tools dropdown and set board to Arduino NANO, processor to ATmega328P (For BeunBot use the old bootloader) and make sure that the programmer is set to AVRISP mkII. Also make sure to select your port before uploading.
+5. You're ready to go.
 
 ## Contributing
 Pull requests are welcome, merges will need to be discussed.
@@ -26,7 +27,7 @@ If you need help or want to report bugs feel free to open an issue.
 ## License
 MIT License
 
-Copyright (c) 2023 Raeven van Dijk & Kevin Spalink
+Copyright (c) 2023 INFA-1A
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
