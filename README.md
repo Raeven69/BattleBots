@@ -1,4 +1,4 @@
-# BeunBot
+# BattleBots
 Code for three tiny robots that are dikke beun.
 
 ## Requirements
