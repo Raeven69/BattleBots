@@ -9,6 +9,9 @@ const int leftMotorBackward = 10;
 const int rightMotorForward = 9;
 const int rightMotorBackward = 6;
 
+const int leftRotationPin = 7;
+const int rightRotationPin = 4;
+
 const int lineSensorOuterRight = A0;
 const int lineSensorFarRight = A1;
 const int lineSensorRight = A2;
@@ -43,8 +46,18 @@ bool onceTurnRight = false;
 bool isTurnLeft = false;
 bool onceTurnLeft = false;
 
-int period = 1000;
+int period = 600;
 unsigned long time_now = 0;
+
+int leftRotationState;
+int lastLeftRotationState;
+int rightRotationState;
+int lastRightRotationState;
+int leftRotationCounter;
+int rightRotationCounter;
+
+bool leftRotating = false;
+bool rotating = false;
 
 void setup() {
   // put your setup code here, to run once:
@@ -77,8 +90,11 @@ void loop() {
   // put your main code here, to run repeatedly:
   
 
-  if(endReached == false && isTurnRight == false && isTurnLeft == false){
+  if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false){
     followLine();
+  }
+  else if (rotating == true){
+    turnAround();
   }
   else if (isTurnRight == true && onceTurnRight == false){
     moveForward(170,0);
@@ -105,12 +121,11 @@ void loop() {
 }
 
 void turnAround(){
-  moveForward(200,0);
-  delay(850);
-  moveStop();
-  moveBackward(200,0);
+  moveBackward(0,200);
   delay(920);
   moveStop();
+  rotating = false;
+  isTurnLeft = true;
 }
 
 void moveForward(int left, int right){
@@ -240,17 +255,17 @@ void followLine(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (farLeft == 1){
-    moveForward(130,180);
+    moveForward(0,180);
     mySerial.println("Naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (farRight == 1){
-    moveForward(180,130);
+    moveForward(180,0);
     mySerial.println("Naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (outerRight == 1){
-    moveForward(0,120);
+    moveForward(180,0);
     mySerial.println("Naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
@@ -293,12 +308,12 @@ void followLine(){
       bool farLeft = analogRead(lineSensorFarLeft) > 850;
       bool outerLeft = analogRead(lineSensorOuterLeft) > 850;
       mySerial.println("LET OP: " + String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-      if(outerLeft == 1 || farLeft == 1 || left == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1)){
+      if(outerLeft == 1 || farLeft == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1)){
         mySerial.println("Ik zie wat links");
-        isTurnLeft = true;
+        mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
       }
       else{
-        turnAround();
+        rotating = true;
         mySerial.println("Ik zie links niks");
       }
     }
