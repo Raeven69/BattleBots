@@ -55,5 +55,4 @@ void rotate(int rotation) {
         leftRotationLastState = leftRotationState;
         rightRotationLastState = rightRotationState;
     }
-    drive(0, 0);
 }

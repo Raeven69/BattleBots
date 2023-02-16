@@ -10,6 +10,9 @@ const int lineSensorFarLeft = A6;
 const int lineSensorOuterLeft = A7;
 
 QTRSensors qtr;
+uint16_t sensorValues[8];
+bool isOnLine;
+uint16_t position;
 
 void initLineSensor() {
     pinMode(lineSensorOuterRight, INPUT);
@@ -39,4 +42,15 @@ void initLineSensor() {
     qtr.calibrationOn.maximum[5] = 979;
     qtr.calibrationOn.maximum[6] = 988;
     qtr.calibrationOn.maximum[7] = 994;
+}
+
+void updateLineData() {
+    position = qtr.readLineBlack(sensorValues);
+    isOnLine = false;
+    for (int i = 0; i < 8; i++) {
+        if (sensorValues[i] > 975) {
+            isOnLine = true;
+            break;
+        }
+    }
 }

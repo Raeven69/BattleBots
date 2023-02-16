@@ -6,57 +6,84 @@
 
 char* lineDirection = "none";
 long nextLineDetection = millis();
-uint16_t sensorValues[8];
 bool shouldDrive = false;
 
+int rotationToObstacle = 0;
+long startGoingToObstacle;
+long stopGoingToObstacle;
+
 void avoidObstacle() {
+    // zet pion rechts
     drive(0, 0);
-    delay(250);
+    delay(200);
     rotate(90);
-    drive(255, 255);
+    drive(0, 0);
+    delay(200);
+    drive(150, 150);
     delay(250);
     drive(0, 0);
+    delay(200);
     openGrapper();
-    delay(250);
-    drive(-255, -255);
-    delay(250);
-    rotate(-90);
-    while (!isBlocked(200)) {
-        drive(255, 255);
+    delay(200);
+    // centreer op lijn
+    drive(-150, -150);
+    delay(350);
+    while (!isBlocked()) {
+        rotate(-3);
+        rotationToObstacle += 3;
     }
+    rotate(-10);
+    rotationToObstacle += 10;
     drive(0, 0);
-    delay(250);
+    delay(200);
+    // pak obstakel
+    startGoingToObstacle = millis();
+    while (!isBlocked(200)) {
+        drive(150, 150);
+    }
+    stopGoingToObstacle = millis();
+    drive(0, 0);
+    delay(200);
     closeGrapper();
-    delay(250);
+    delay(200);
+    drive(-150, -150);
+    delay(stopGoingToObstacle - startGoingToObstacle);
+    drive(0, 0);
+    // zet obstakel links
     rotate(-90);
-    drive(255, 255);
+    drive(0, 0);
+    delay(200);
+    drive(150, 150);
     delay(250);
     drive(0, 0);
+    delay(200);
     openGrapper();
-    delay(250);
-    drive(-255, -255);
-    delay(250);
-    rotate(180);
-    drive(255, 255);
-    delay(250);
+    delay(200);
+    // centreer op lijn
+    drive(-150, -150);
+    delay(350);
+    rotate(90 + rotationToObstacle);
     drive(0, 0);
+    delay(200);
+    // pak pion op
+    drive(150, 150);
+    delay(350);
+    drive(0, 0);
+    delay(200);
     closeGrapper();
-    delay(250);
-    drive(-255, -255);
-    delay(250);
+    delay(200);
+    // centreer op lijn
+    drive(-150, -150);
+    delay(350);
     rotate(-90);
+    drive(0, 0);
+    delay(200);
     drive(255, 255);
+    rotationToObstacle = 0;
 }
 
 void followLine() {
-    uint16_t position = qtr.readLineBlack(sensorValues);
-    bool isOnLine = false;
-    for (int i = 0; i < 8; i++) {
-        if (sensorValues[i] > 975) {
-            isOnLine = true;
-            break;
-        }
-    }
+    updateLineData();
     if (isOnLine) {
         if (position > 2500 && position < 4500) {
             drive(255, 255);
@@ -112,4 +139,8 @@ void loop() {
         closeGrapper();
     }
     driveOnButtonPress();
+    // rotate(90);
+    // delay(1500);
+    // rotate(-90);
+    // delay(INFINITY);
 }
