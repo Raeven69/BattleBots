@@ -1,4 +1,4 @@
-const int driveButtonBin = 3;
+const int driveButtonBin = 9;
 
 const int buttons[1] = {driveButtonBin};
 long nextClick = millis() + 500;

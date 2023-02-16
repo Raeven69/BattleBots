@@ -12,8 +12,7 @@ bool shouldDrive = false;
 void avoidObstacle() {
     drive(0, 0);
     delay(250);
-    drive(255, -255);
-    delay(500);
+    rotate(90);
     drive(255, 255);
     delay(250);
     drive(0, 0);
@@ -21,8 +20,7 @@ void avoidObstacle() {
     delay(250);
     drive(-255, -255);
     delay(250);
-    drive(-255, 255);
-    delay(500);
+    rotate(-90);
     while (!isBlocked(200)) {
         drive(255, 255);
     }
@@ -30,8 +28,7 @@ void avoidObstacle() {
     delay(250);
     closeGrapper();
     delay(250);
-    drive(-255, 255);
-    delay(500);
+    rotate(-90);
     drive(255, 255);
     delay(250);
     drive(0, 0);
@@ -39,8 +36,7 @@ void avoidObstacle() {
     delay(250);
     drive(-255, -255);
     delay(250);
-    drive(255, -255);
-    delay(1000);
+    rotate(180);
     drive(255, 255);
     delay(250);
     drive(0, 0);
@@ -48,8 +44,7 @@ void avoidObstacle() {
     delay(250);
     drive(-255, -255);
     delay(250);
-    drive(-255, 255);
-    delay(500);
+    rotate(-90);
     drive(255, 255);
 }
 
@@ -113,5 +108,8 @@ void setup() {
 }
 
 void loop() {
+    if (!grapperClosed) {
+        closeGrapper();
+    }
     driveOnButtonPress();
 }

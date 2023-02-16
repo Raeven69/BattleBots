@@ -1,9 +1,5 @@
 const int leftMotorPin1 = 5;
 const int leftMotorPin2 = 6;
-const int rightMotorPin2 = 10;
-const int rightMotorPin1 = 11;
-const int leftMotorPin1 = 5;
-const int leftMotorPin2 = 6;
 const int rightMotorPin2 = 3;
 const int rightMotorPin1 = 11;
 const int leftRotationPin = 12;
@@ -45,7 +41,7 @@ void drive(int left, int right) {
 
 void rotate(int rotation) {
     int counter = 0;
-    while (counter < (int)((136.0/360.0) * abs(rotation))) {
+    while (counter < (int)((135.0/360.0) * abs(rotation))) {
         if (rotation > 0) {
             drive(150, -150);
         } else {
