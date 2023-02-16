@@ -60,25 +60,26 @@ void loop() {
   enableBluetooth();
   detectWall();
   if(distance < 15 && checkingSides == false) {
-    brake();
-    Serial.println("Wall detected");
     checkingSides = true;
+    Serial.println("Wall detected");
     brake();
     grabberLeft();
     detectWall();
-    if(distance < 15) {
+    if(distance < 20) {
       Serial.println("Left wall detected");
       grabberRight();
       detectWall();
-      if(distance < 15) {
+      if(distance < 20) {
         Serial.println("Right wall detected");
         Serial.println("No path found, turning around");
+        grabberFront();
         turnAround();
         brake();
         checkingSides = false;
       }
       else {
         Serial.println("Path found on the right side, turning right");
+        grabberFront();
         turnRight();
         brake();
         checkingSides = false;
@@ -86,6 +87,7 @@ void loop() {
     }
     else {
       Serial.println("Path found on the left side, turning left");
+      grabberFront();
       turnLeft();
       brake();
       checkingSides = false;
@@ -136,7 +138,6 @@ void brake() {                          // This function deactivates both motors
    digitalWrite(leftMotorPin1, LOW);
    analogWrite(rightMotorPin2, LOW);
    digitalWrite(rightMotorPin1, LOW); 
-   delay(100);
 }
 
 void stop() {                          // This function deactivates both motors and will make the battlebot stop driving
