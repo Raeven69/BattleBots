@@ -10,13 +10,41 @@ uint16_t sensorValues[8];
 bool shouldDrive = false;
 
 void avoidObstacle() {
-    closeGrapper();
+    drive(0, 0);
+    delay(250);
     drive(255, -255);
     delay(500);
     drive(255, 255);
     delay(250);
     drive(0, 0);
     openGrapper();
+    delay(250);
+    drive(-255, -255);
+    delay(250);
+    drive(-255, 255);
+    delay(500);
+    while (!isBlocked(200)) {
+        drive(255, 255);
+    }
+    drive(0, 0);
+    delay(250);
+    closeGrapper();
+    delay(250);
+    drive(-255, 255);
+    delay(500);
+    drive(255, 255);
+    delay(250);
+    drive(0, 0);
+    openGrapper();
+    delay(250);
+    drive(-255, -255);
+    delay(250);
+    drive(255, -255);
+    delay(1000);
+    drive(255, 255);
+    delay(250);
+    drive(0, 0);
+    closeGrapper();
     delay(250);
     drive(-255, -255);
     delay(250);

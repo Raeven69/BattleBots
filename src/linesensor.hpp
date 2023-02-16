@@ -1,4 +1,4 @@
-#include "QTRSensors.h"
+#include "lib/QTRSensors.hpp"
 
 const int lineSensorOuterRight = A0;
 const int lineSensorFarRight = A1;
