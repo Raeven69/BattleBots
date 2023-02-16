@@ -1,3 +1,9 @@
+#include <SoftwareSerial.h> 
+  // Define the pins for the bluetooth module
+SoftwareSerial mySerial(10, 8); // RX | TX 
+
+
+
 //Pinnumbers
 const int leftMotorPin1 = 3;
 const int triggerPin = 4;
@@ -5,8 +11,8 @@ const int leftMotorPin2 = 5;
 const int rightMotorPin2 = 6;
 const int echoPin = 7;
 const int rightMotorPin1 = 9;
-const int rightRotationSensor= 11;
-const int leftRotationSensor = 12;
+const int rightRotationPin = 11;
+const int leftRotationPin = 12;
 
 
 
@@ -17,57 +23,55 @@ int left = 255;
 int right = 255;
 unsigned long duration;
 unsigned int distance;
-unsigned int rotationStateRight;
-unsigned int rotationLastStateRight;
-unsigned int rotationStateLeft;
-unsigned int rotationLastStateLeft;
-int counterRight;
-int counterLeft;
+unsigned int valueRightSensor;
+unsigned int valueLeftSensor;
+int rotationState;
+int rotationLastState;
+int counter = 0;
 
 
 
 //Setup
 void setup() {
+  Serial.begin(9600); 
+  while (!Serial) {
+    ;
+  }
+  mySerial.begin(9600);
   pinMode(triggerPin, OUTPUT);        //Ultra sonic distance sensor trigger
   pinMode(echoPin, INPUT);            //Ultra sonic distance sensor echo
-  Serial.begin(9600);                 //Serial.begin for testing purposes
   pinMode(rightMotorPin1, OUTPUT);    //Right motor
   pinMode(rightMotorPin2, OUTPUT);
   pinMode(leftMotorPin1, OUTPUT);     //Left motor
   pinMode(leftMotorPin2, OUTPUT);
-  pinMode(rightRotationSensor, INPUT);   //Right rotation sensor
-  pinMode(leftRotationSensor, INPUT);    //Left rotation sensor
+  pinMode(rightRotationPin, INPUT);   //Right rotation sensor
+  pinMode(leftRotationPin, INPUT);    //Left rotation sensor
 }
 
 
 
 //Loop
-void loop() {
-  rotationStateLeft = digitalRead(leftRotationSensor);
-  if(rotationStateLeft != rotationLastStateLeft) {
-    if(digitalRead(rightRotationSensor) != rotationStateLeft) {
-      counterRight++;
-    }
-  } 
-  
-  rotationStateRight = digitalRead(rightRotationSensor);
-  if(rotationStateRight != rotationLastStateRight) {
-    if(digitalRead(leftRotationSensor) != rotationStateRight) {
-      counterLeft++;
-    }
+void loop() { 
+  bluetooth();
+  turnLeft();
+  readRotation();
+  if(counter = 6){
+    brake();
   }
-  Serial.print("right rotation: ");
-  Serial.print(counterLeft);
-  Serial.print("left rotation: ");
-  Serial.println(counterRight);
-  rotationLastStateLeft = rotationStateLeft;
-  rotationLastStateRight = rotationStateRight;
 }
 
 
 
-
 //Functions
+void bluetooth(){
+  if (mySerial.available()) {
+    Serial.write(mySerial.read());
+  }
+  if (Serial.available()) {
+    mySerial.write(Serial.read());
+  }
+}
+
 void detectWall() {                     //This function activates the ultra sonic distance sensor and it calculates the distance of the object 
   digitalWrite(triggerPin, LOW);        //in front of it in centimetres
   delayMicroseconds(5);
@@ -126,4 +130,27 @@ void turnAround() {                     //This function will make the battlebot 
   analogWrite(rightMotorPin2, right);
   digitalWrite(rightMotorPin1, LOW);
   delay(around);
+}
+
+void printRotationSensor() { 
+  valueRightSensor = digitalRead(rightRotationPin);
+  valueLeftSensor = digitalRead(leftRotationPin);
+  Serial.print("R-");
+  Serial.print(valueRightSensor);
+  Serial.print("L-");
+  Serial.println(valueLeftSensor);
+}
+
+void readRotation() {
+    rotationState = digitalRead(leftRotationPin);
+    if (rotationState != rotationLastState) {
+        if (digitalRead(rightRotationPin) != rotationState) {
+            counter--;
+        } else {
+            counter++;
+        }
+    }
+    Serial.println(counter);
+    rotationLastState = rotationState;
+    mySerial.println(counter);
 }
