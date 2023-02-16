@@ -1,6 +1,6 @@
 #include <SoftwareSerial.h> 
   // Define the pins for the bluetooth module
-SoftwareSerial mySerial(10, 8); // RX | TX 
+SoftwareSerial mySerial(13, 8); // RX | TX 
 
 
 
@@ -10,15 +10,13 @@ const int triggerPin = 4;
 const int leftMotorPin2 = 5;
 const int rightMotorPin2 = 6;
 const int echoPin = 7;
-const int rightMotorPin1 = 9;
-const int rightRotationPin = 11;
+const int rightMotorPin1 = 11;
+const int rightRotationPin = 10;
 const int leftRotationPin = 12;
 
 
 
 //Variables
-const int turn = 525;
-const int around = 1025;
 int left = 255;
 int right = 255;
 unsigned long duration;
@@ -28,7 +26,8 @@ unsigned int valueLeftSensor;
 int rotationState;
 int rotationLastState;
 int counter = 0;
-
+unsigned int turnDuration;
+unsigned int turnAroundDuration;
 
 
 //Setup
@@ -53,11 +52,8 @@ void setup() {
 //Loop
 void loop() { 
   bluetooth();
-  turnLeft();
-  readRotation();
-  if(counter = 6){
-    brake();
-  }
+  turnAround();
+  brake();
 }
 
 
@@ -109,7 +105,9 @@ void turnRight() {                      //This function will make the battlebot 
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin2, LOW);
   analogWrite(rightMotorPin1, right);
-  delay(turn);
+  duration = pulseIn(rightRotationPin, HIGH);
+  turnDuration = duration * 0.0065;
+  delay(turnDuration);
 }
 
 void turnLeft() {                       //This function will make the battlebot make a 90 degree left turn
@@ -119,7 +117,9 @@ void turnLeft() {                       //This function will make the battlebot 
   analogWrite(leftMotorPin1, left);
   analogWrite(rightMotorPin2, right);
   digitalWrite(rightMotorPin1, LOW);
-  delay(turn);
+  duration = pulseIn(leftRotationPin, HIGH);
+  turnDuration = duration * 0.0065;
+  delay(turnDuration);
 }
 
 void turnAround() {                     //This function will make the battlebot make a 180 degree turn
@@ -129,7 +129,9 @@ void turnAround() {                     //This function will make the battlebot 
   analogWrite(leftMotorPin1, left);
   analogWrite(rightMotorPin2, right);
   digitalWrite(rightMotorPin1, LOW);
-  delay(around);
+  duration = pulseIn(leftRotationPin, HIGH);
+  turnAroundDuration = duration * 0.0145;
+  delay(turnAroundDuration);
 }
 
 void printRotationSensor() { 
