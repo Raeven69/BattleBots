@@ -57,19 +57,19 @@ void setup() {
 
 //Loop
 void loop() {
-  enableBluetooth();
+ 
   detectWall();
-  if(distance < 15 && checkingSides == false) {
+  if(distance > 0 && distance < 18 && checkingSides == false) {
     checkingSides = true;
     Serial.println("Wall detected");
     brake();
     grabberLeft();
     detectWall();
-    if(distance < 20) {
+    if(distance < 18) {
       Serial.println("Left wall detected");
       grabberRight();
       detectWall();
-      if(distance < 20) {
+      if(distance < 18) {
         Serial.println("Right wall detected");
         Serial.println("No path found, turning around");
         grabberFront();
