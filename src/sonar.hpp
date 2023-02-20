@@ -6,7 +6,7 @@ void initSonar() {
     pinMode(echoPin, INPUT);
 }
 
-bool isBlocked(int distance = 600) {
+bool isBlocked(int distance = 750) {
     digitalWrite(triggerPin, HIGH);
     digitalWrite(triggerPin, LOW);
     return pulseIn(echoPin, HIGH) < distance;
