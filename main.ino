@@ -1,13 +1,16 @@
+#include <QTRSensors.h>
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #define bluetoothRX 2
 #define bluetoothTX 3
 SoftwareSerial mySerial(bluetoothRX, bluetoothTX);
 
-const int leftMotorForward = 5;
-const int leftMotorBackward = 10;
-const int rightMotorForward = 9;
-const int rightMotorBackward = 6;
+QTRSensors qtr;
+
+const int leftMotorForward = 5; //5
+const int leftMotorBackward = 6; //6
+const int rightMotorForward = 9; //9
+const int rightMotorBackward = 10; //10
 
 const int leftRotationPin = 7;
 const int rightRotationPin = 4;
@@ -46,18 +49,38 @@ bool onceTurnRight = false;
 bool isTurnLeft = false;
 bool onceTurnLeft = false;
 
-int period = 600;
+int period = 1000;
 unsigned long time_now = 0;
 
+int rotationState;
+int rotationLastState;
+
 int leftRotationState;
-int lastLeftRotationState;
+int leftRotationLastState;
 int rightRotationState;
-int lastRightRotationState;
-int leftRotationCounter;
-int rightRotationCounter;
+int rightRotationLastState;
 
 bool leftRotating = false;
 bool rotating = false;
+
+int calibratedValue;
+
+bool calibrating = true;
+
+// Sensor Calibration
+const int calibrationTime = 30; // in milliseconds * 20 (50 = 1 second)
+const bool shouldCalibrate = true;
+
+int getLineSensorSensitivity(int margin = 80)
+{
+    int totalSize = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        totalSize += qtr.calibrationOn.maximum[i];
+    }
+    return (int)(totalSize / 8 - margin);
+}
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -83,18 +106,61 @@ void setup() {
   // Open serial communication for the Bluetooth Serial Port
   mySerial.begin(9600);
 
+  qtr.setTypeAnalog();
+  qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
+
+ if (shouldCalibrate)
+  {
+    int i;
+    Serial.println("");
+    Serial.print("Calibrating");
+    for (i = 0; i < calibrationTime; i++)
+    {
+      //drive(140,140);
+      if (i % 10 == 0)
+      {
+        (i % 20 == 0) ? drive(-140,140) : drive(140,-140);
+      }
+      else if (i % 15 == 0)
+      {
+        (i % 30 == 0) ? drive(-140,140) : drive(140,-140); 
+      }
+      if ((i % 100 == 0 || i == 150) && i > 0)
+      {
+        Serial.print(".");
+      }
+      qtr.calibrate();
+      delay(20);
+    }
+    Serial.println("");
+    Serial.println("Calibration complete");
+    drive(0,0);
+    calibratedValue = getLineSensorSensitivity();
+    Serial.println(calibratedValue);
+  }
+
 }
+
 
 
 void loop() {
   // put your main code here, to run repeatedly:
+  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+  bool right = analogRead(lineSensorRight) > calibratedValue;
+  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+  bool left = analogRead(lineSensorLeft) > calibratedValue;
+  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   
 
   if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false){
     followLine();
   }
   else if (rotating == true){
-    turnAround();
+    rotate(180);
+    rotating = false;
   }
   else if (isTurnRight == true && onceTurnRight == false){
     moveForward(170,0);
@@ -109,7 +175,6 @@ void loop() {
     moveForward(0,170);
     delay(400);
     moveStop();
-    onceTurnLeft = true;
   }
   else if (isTurnLeft == true && onceTurnLeft == true){
     turnLeft();
@@ -165,14 +230,14 @@ void moveStop(){
 }
 
 void turnRight(){
-  bool outerRight = analogRead(lineSensorOuterRight) > 850;
-  bool farRight = analogRead(lineSensorFarRight) > 850;
-  bool right = analogRead(lineSensorRight) > 850;
-  bool innerRight = analogRead(lineSensorInnerRight) > 850;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > 850;
-  bool left = analogRead(lineSensorLeft) > 850;
-  bool farLeft = analogRead(lineSensorFarLeft) > 850;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > 850;
+  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+  bool right = analogRead(lineSensorRight) > calibratedValue;
+  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+  bool left = analogRead(lineSensorLeft) > calibratedValue;
+  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(170,0);
@@ -185,19 +250,11 @@ void turnRight(){
 }
 
 void turnLeft(){
-  bool outerRight = analogRead(lineSensorOuterRight) > 850;
-  bool farRight = analogRead(lineSensorFarRight) > 850;
-  bool right = analogRead(lineSensorRight) > 850;
-  bool innerRight = analogRead(lineSensorInnerRight) > 850;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > 850;
-  bool left = analogRead(lineSensorLeft) > 850;
-  bool farLeft = analogRead(lineSensorFarLeft) > 850;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > 850;
   if(innerRight == 0 || innerLeft == 0){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(0,170);
   }
-  if (innerRight == 1 || (innerRight == 1 && innerLeft == 1)){
+  if (innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){
     moveStop();
     isTurnLeft = false;
     onceTurnLeft = false;
@@ -205,14 +262,14 @@ void turnLeft(){
 }
 
 void followLine(){
-  bool outerRight = analogRead(lineSensorOuterRight) > 750;
-  bool farRight = analogRead(lineSensorFarRight) > 750;
-  bool right = analogRead(lineSensorRight) > 750;
-  bool innerRight = analogRead(lineSensorInnerRight) > 750;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > 750;
-  bool left = analogRead(lineSensorLeft) > 750;
-  bool farLeft = analogRead(lineSensorFarLeft) > 750;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > 750;
+  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+  bool right = analogRead(lineSensorRight) > calibratedValue;
+  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+  bool left = analogRead(lineSensorLeft) > calibratedValue;
+  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
 
   if( mySerial.available() > 0){
     val = mySerial.read();
@@ -237,20 +294,20 @@ void followLine(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (innerLeft == 1 && innerRight == 0){
-    moveForward(200,200);
+    moveForward(180,200);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (innerLeft == 0 && innerRight == 1){
-    moveForward(200,200);
+    moveForward(200,180);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (left == 1){
-    moveForward(160,190);
+    moveForward(120,190);
     mySerial.println("Iets naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (right == 1){
-    moveForward(190,160);
+    moveForward(190,120);
     mySerial.println("Iets naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
@@ -283,14 +340,14 @@ void followLine(){
       mySerial.println("In de achteruit");
       time_now = millis();
       while(millis() < time_now + period){
-        bool outerRight = analogRead(lineSensorOuterRight) > 850;
-        bool farRight = analogRead(lineSensorFarRight) > 850;
-        bool right = analogRead(lineSensorRight) > 850;
-        bool innerRight = analogRead(lineSensorInnerRight) > 850;
-        bool innerLeft = analogRead(lineSensorInnerLeft) > 850;
-        bool left = analogRead(lineSensorLeft) > 850;
-        bool farLeft = analogRead(lineSensorFarLeft) > 850;
-        bool outerLeft = analogRead(lineSensorOuterLeft) > 850;
+        bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+        bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+        bool right = analogRead(lineSensorRight) > calibratedValue;
+        bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+        bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+        bool left = analogRead(lineSensorLeft) > calibratedValue;
+        bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+        bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
         moveBackward(140,140);
         if(outerLeft == 1 || farLeft == 1 || left == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1)){
           moveStop();
@@ -299,14 +356,14 @@ void followLine(){
         }
       }
       moveStop();
-      bool outerRight = analogRead(lineSensorOuterRight) > 850;
-      bool farRight = analogRead(lineSensorFarRight) > 850;
-      bool right = analogRead(lineSensorRight) > 850;
-      bool innerRight = analogRead(lineSensorInnerRight) > 850;
-      bool innerLeft = analogRead(lineSensorInnerLeft) > 850;
-      bool left = analogRead(lineSensorLeft) > 850;
-      bool farLeft = analogRead(lineSensorFarLeft) > 850;
-      bool outerLeft = analogRead(lineSensorOuterLeft) > 850;
+      bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+      bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+      bool right = analogRead(lineSensorRight) > calibratedValue;
+      bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+      bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+      bool left = analogRead(lineSensorLeft) > calibratedValue;
+      bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+      bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
       mySerial.println("LET OP: " + String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
       if(outerLeft == 1 || farLeft == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1)){
         mySerial.println("Ik zie wat links");
@@ -318,4 +375,42 @@ void followLine(){
       }
     }
   }
+}
+
+void rotate(int rotation) {
+    int counter = 0;
+    while (counter < (int)((140.0/360.0) * abs(rotation))) { // 140 was 135
+        if (rotation > 0) {
+            drive(150, -150);
+        } else {
+            drive(-150, 150);
+        }
+        leftRotationState = digitalRead(leftRotationPin);
+        rightRotationState = digitalRead(rightRotationPin);
+        if (leftRotationState != leftRotationLastState || rightRotationState != rightRotationLastState) {
+            counter++;
+        }
+        leftRotationLastState = leftRotationState;
+        rightRotationLastState = rightRotationState;
+    }
+    drive(0, 0);
+}
+
+
+void drive(int left, int right) {
+    if (left < 0) {
+        analogWrite(leftMotorForward, 0);
+        analogWrite(leftMotorBackward, abs(left));
+    } else {
+        analogWrite(leftMotorForward, left);
+        analogWrite(leftMotorBackward, 0);
+    }
+    if (right < 0) {
+        analogWrite(rightMotorForward, 0);
+        analogWrite(rightMotorBackward, abs(right));
+    } else {
+        analogWrite(rightMotorForward, right);
+        analogWrite(rightMotorBackward, 0);
+    }
+    isDriving = abs(left) + abs(right) > 0;
 }
