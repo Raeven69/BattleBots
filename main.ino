@@ -9,8 +9,9 @@ long nextLineDetection = millis();
 void avoidObstacle()
 {
     drive(255, 100);
-    delay(600);
+    delay(750);
     drive(100, 255);
+    delay(500);
     updateLineData();
     while (!isOnLine)
     {
@@ -42,10 +43,12 @@ void followLine()
     else if (lineDirection == "left")
     {
         drive(50, 255);
+        nextLineDetection = millis() + 1000;
     }
     else if (lineDirection == "right")
     {
         drive(255, 50);
+        nextLineDetection = millis() + 1000;
     }
 }
 

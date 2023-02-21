@@ -15,20 +15,17 @@ bool isOnLine;
 uint16_t position;
 
 void calibrateSensor() {
-    digitalWrite(LED_BUILTIN, HIGH);
     openGrapper(); 
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-    digitalWrite(LED_BUILTIN, HIGH);
-    drive(255,255);
+    drive(255, 255);
     delay(20);
-    drive(86,72);
+    drive(86, 72);
     for (uint16_t i = 0; i < 150; i++){
         qtr.calibrate();
     }
-    drive(0,0);
+    drive(0, 0);
     delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
     closeGrapper();
     rotate(-90);
 }
@@ -43,14 +40,13 @@ void initLineSensor() {
     pinMode(lineSensorFarLeft, INPUT);
     pinMode(lineSensorOuterLeft, INPUT);
     calibrateSensor();
-    
 }
 
 void updateLineData() {
     position = qtr.readLineBlack(sensorValues);
     bool isCurrentlyOnLine = false;
     for (int i = 0; i < 8; i++) {
-        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 25) {
+        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 50) {
             isCurrentlyOnLine = true;
             break;
         }
