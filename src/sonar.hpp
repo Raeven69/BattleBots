@@ -1,12 +1,17 @@
+// Sonar pins
 const int echoPin = 4;
 const int triggerPin = 7;
 
-void initSonar() {
+// Initialize the sonar pins
+void initSonar()
+{
     pinMode(triggerPin, OUTPUT);
     pinMode(echoPin, INPUT);
 }
 
-bool isBlocked(int distance = 750) {
+// Check whether there is an obstacle in front of the robot
+bool isBlocked(int distance = 750)
+{
     digitalWrite(triggerPin, HIGH);
     digitalWrite(triggerPin, LOW);
     return pulseIn(echoPin, HIGH) < distance;

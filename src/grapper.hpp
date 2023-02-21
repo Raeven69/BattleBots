@@ -1,24 +1,29 @@
+// Include the servo library for controlling servo motors
 #include "lib/Servo.hpp"
 
+// The servo object to write values to
 Servo grapper;
+// Variable for storing whether the grapper is closed
 bool grapperClosed = false;
+// The pin for the grapper
 const int grapperPin = 2;
 
-void initGrapper() {
+// Attach the grapper pin to the servo object
+void initGrapper()
+{
     grapper.attach(grapperPin);
 }
 
-void toggleGrapper() {
-    grapper.write((grapperClosed) ? 90 : 45);
-    grapperClosed = !grapperClosed;
-}
-
-void openGrapper() {
+// Open the grapper
+void openGrapper()
+{
     grapper.write(90);
     grapperClosed = false;
 }
 
-void closeGrapper() {
+// Close the grapper
+void closeGrapper()
+{
     grapper.write(45);
     grapperClosed = true;
 }
