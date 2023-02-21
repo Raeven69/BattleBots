@@ -8,8 +8,9 @@ long nextLineDetection = millis();
 
 void avoidObstacle()
 {
-    drive(255, 100);
-    delay(750);
+    rotate(60);
+    drive(255, 255);
+    delay(300);
     drive(100, 255);
     delay(500);
     updateLineData();
@@ -24,7 +25,9 @@ void followLine()
     updateLineData();
     if (isOnLine)
     {
-        drive((position < 2500) ? min(max((int)(255 * (3500 - position) / 3500), 50), 255) : 255, (position > 4500) ? min(max((int)(255 * (position - 3500) / 3500), 50), 255) : 255);
+        int leftWheelSpeed = (position < 2500) ? min(max((int)(255 * (3500 - position) / 3500), 50), 255) : 255;
+        int rightWheelSpeed = (position > 4500) ? min(max((int)(255 * (position - 3500) / 3500), 50), 255) : 255;
+        drive(leftWheelSpeed, rightWheelSpeed);
         if (position < 1000)
         {
             lineDirection = "left";
