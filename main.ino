@@ -49,7 +49,7 @@ bool onceTurnRight = false;
 bool isTurnLeft = false;
 bool onceTurnLeft = false;
 
-int period = 1750;
+int period = 2150;
 unsigned long time_now = 0;
 
 int rotationState;
@@ -194,14 +194,6 @@ void loop() {
 
 }
 
-void turnAround(){
-  moveBackward(0,200);
-  delay(920);
-  moveStop();
-  rotating = false;
-  isTurnLeft = true;
-}
-
 void moveForward(int left, int right){
 
   goesForward = true;
@@ -300,9 +292,8 @@ void followLine(){
     moveForward(110,190);
     mySerial.println("Naar links");
   }
-  else if ((outerRight == 1 && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1) || (left == 1 && farRight == 1) || (right == 1 && farRight == 1 && outerRight == 1) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1)) {
+  else if ((outerRight == 1 && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1) || (left == 1 && farRight == 1) || (right == 1 && farRight == 1 && outerRight == 1) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1) || (left == 1 && innerLeft == 1 && outerRight == 1) || (left == 1 && farRight == 1)) {
     mySerial.println("Bocht naar rechts");
-    //turning = true;
     moveStop();
     isTurnRight = true;
   }
@@ -319,12 +310,12 @@ void followLine(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (left == 1){
-    moveForward(120,200);
+    moveForward(135,200);
     mySerial.println("Iets naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (right == 1){
-    moveForward(200,120);
+    moveForward(200,135);
     mySerial.println("Iets naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
@@ -365,13 +356,13 @@ void followLine(){
         bool left = analogRead(lineSensorLeft) > calibratedValue;
         bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
         bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
-        moveBackward(140,140);
+        moveBackward(162,145);
         if(outerLeft == 1 || farLeft == 1 || left == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1)){
           moveStop();
           mySerial.println("Ik zie wat links");
           isTurnLeft = true;
         }
-        else if(farRight == 1 || outerRight == 1){
+        else if(farRight == 1 || outerRight == 1 || (right == 1 && (farLeft == 0 || outerLeft == 0))){
           moveStop();
           mySerial.println("Ik zie wat rechts");
           isTurnRight = true;
@@ -390,8 +381,13 @@ void followLine(){
       if(outerLeft == 1 || farLeft == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1)){
         mySerial.println("Ik zie wat links");
         mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-        turnLeft();
+        isTurnLeft = true;
       }
+      else if(farRight == 1 || outerRight == 1 || (right == 1 && (farLeft == 0 || outerLeft == 0))){
+          moveStop();
+          mySerial.println("Ik zie wat rechts");
+          isTurnRight = true;
+        }
       else{
         rotating = true;
         mySerial.println("Ik zie links niks");
@@ -444,7 +440,7 @@ void start(){
     int i;
     for (i = 0; i < calibrationTime; i++)
     {
-      drive(165,140);
+      drive(143,125);
       qtr.calibrate();
       delay(20);
     }
@@ -458,7 +454,7 @@ void start(){
     delay(300);
     // Close gripper
     rotate(-90);
-    drive(160,140);
+    drive(155,130);
     starting = false;
   }
   
