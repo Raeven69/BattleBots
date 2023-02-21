@@ -1,13 +1,12 @@
 //Libraries
 #include <SoftwareSerial.h>
-#include <Servo.h>
 
 
 
 //Pinnumbers
-SoftwareSerial bluetooth(13, 8); // RX | TX  // Define the pins for the bluetooth module
-Servo grabber;                               // Define the name of the servo
-const int grabberPin = 9;                    // Servo 
+SoftwareSerial bluetooth(1, 0); // RX | TX  // Define the pins for the bluetooth module
+const int grabberPin = 2;                    // Servo for grabbing the pion
+const int servoPin = 9;                      // Servo for the ultra sonic distance sensor
 const int leftMotorPin1 = 3;                 // Left motor backwards
 const int triggerPin = 4;                    // Ultra sonic distance sensor trigger
 const int leftMotorPin2 = 5;                 // Left motor forwards
@@ -43,9 +42,9 @@ boolean drivingToWall = false;
 //Setup
 void setup() {
   grabberFront();
+  pinMode(servoPin, OUTPUT);
   pinMode(triggerPin, OUTPUT);    
-  pinMode(echoPin, INPUT);
-  grabber.attach(grabberPin);            
+  pinMode(echoPin, INPUT);           
   Serial.begin(9600);                  // Open serial communications and wait for port to open:                          
   while (!Serial) {
     ;
@@ -63,7 +62,7 @@ void setup() {
 
 //Loop
 void loop() {
-  solveMaze();
+  checkForPath();
 }
 
 
@@ -90,8 +89,8 @@ void detectWall() {                     // This function activates the ultra son
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-   left = 200;
-   right = 211;
+   left = 251;
+   right = 255;
    analogWrite(leftMotorPin2, left);
    digitalWrite(leftMotorPin1, LOW);
    analogWrite(rightMotorPin2, right);
@@ -131,7 +130,7 @@ void turnRight() {                      // This function will make the battlebot
   }
   counterRight = 0;
   brake();
-  while(counterLeft < 17) {
+  while(counterLeft < 11) {
     readRotationLeft();
     forwardsLeft();
   }
@@ -151,15 +150,15 @@ void turnLeft() {                       // This function will make the battlebot
   }
   brake();
   counterRight = 0;
-  while(counterRight < 17) {
+  while(counterRight < 11) {
     readRotationRight();
     forwardsRight();
   }
 }
 
 void backwardsLeft() {
-  left = 200;
-  right = 200;
+  left = 255;
+  right = 255;
   digitalWrite(leftMotorPin2, LOW);
   analogWrite(leftMotorPin1, left);
   digitalWrite(rightMotorPin2, LOW);
@@ -167,8 +166,8 @@ void backwardsLeft() {
 }
 
 void forwardsLeft() {
-  left = 200;
-  right = 200;
+  left = 255;
+  right = 255;
   analogWrite(leftMotorPin2, right);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin2, LOW);
@@ -176,8 +175,8 @@ void forwardsLeft() {
 }
 
 void backwardsRight() {
-  left = 200;
-  right = 200;
+  left = 255;
+  right = 255;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin1, right);
@@ -185,8 +184,8 @@ void backwardsRight() {
 }
 
 void forwardsRight() {
-  left = 200;
-  right = 200;
+  left = 255;
+  right = 255;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin1, LOW);
@@ -194,8 +193,8 @@ void forwardsRight() {
 }
 
 void turnAround() {                     // This function will make the battlebot make a 180 degree turn
-  left = 200;
-  right = 200;
+  left = 255;
+  right = 255;
   digitalWrite(leftMotorPin2, LOW);
   analogWrite(leftMotorPin1, left);
   analogWrite(rightMotorPin2, right);
@@ -224,64 +223,35 @@ void readRotationLeft() {
 }
 
 void grabberLeft() {
-  grabber.write(180);
-  delay(600);
+  // A pulse each 20ms
+  digitalWrite(servoPin, HIGH);
+  delayMicroseconds(2600); // Duration of the pusle in microseconds
+  digitalWrite(servoPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+  // Pulses duration: 650 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
 void grabberFront() {
-  grabber.write(110);
+  // A pulse each 20ms
+  digitalWrite(servoPin, HIGH);
+  delayMicroseconds(1650); // Duration of the pusle in microseconds
+  digitalWrite(servoPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+  // Pulses duration: 650 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
 void grabberRight() {
-  grabber.write(20);
-  delay(600);
+  // A pulse each 20ms
+  digitalWrite(servoPin, HIGH);
+  delayMicroseconds(650); // Duration of the pusle in microseconds
+  digitalWrite(servoPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+  // Pulses duration: 650 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
 void checkForPath() {
-   if(distance > 0 && distance < 18 && checkingSides == false) {
-    checkingSides = true;
-    Serial.println("Wall detected");
-    brake();
-    grabberLeft();
-    detectWall();
-    if(distance < 18) {
-      Serial.println("Left wall detected");
-      grabberRight();
-      detectWall();
-      if(distance < 18) {
-        Serial.println("Right wall detected");
-        Serial.println("No path found, turning around");
-        grabberFront();
-        turnAround();
-        brake();
-        checkingSides = false;
-      }
-      else {
-        Serial.println("Path found on the right side, turning right");
-        grabberFront();
-        turnRight();
-        brake();
-        checkingSides = false;
-      }
-    }
-    else {
-      Serial.println("Path found on the left side, turning left");
-      grabberFront();
-      turnLeft();
-      brake();
-      counterRight = 0;
-      checkingSides = false;
-    }
-  }
-  else {
-    driveForward();
-    grabberFront();
-  }
-}
-
-void solveMaze() {
   detectWall();
-  if(distance < 8 && drivingToWall == false) {
+  if(distance > 0 && distance < 8 && drivingToWall == false) {
     counterRight = 0;
     counterLeft = 0;
     drivingToWall = true;
@@ -289,11 +259,11 @@ void solveMaze() {
     grabberLeft();                                            // Check for path on the left side
     delay(800);
     detectWall();
-    if(distance < 15) {                                       // If there is no path, check for a path on the right side
+    if(distance > 0 && distance < 20) {                       // If there is no path, check for a path on the right side
       grabberRight();
       delay(800);
       detectWall();
-      if(distance < 15) {                                     // If there is no path, drive backwards the same distance, and make the same last made turn to position the bot
+      if(distance > 0 && distance < 20) {                     // If there is no path, drive backwards the same distance, and make the same last made turn to position the bot
         grabberFront();
         turnAround();
         brake();
