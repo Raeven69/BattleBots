@@ -63,7 +63,7 @@ void setup() {
 
 //Loop
 void loop() {
-  driveForward();
+  solveMaze();
 }
 
 
@@ -91,7 +91,7 @@ void detectWall() {                     // This function activates the ultra son
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
    left = 200;
-   right = 210;
+   right = 211;
    analogWrite(leftMotorPin2, left);
    digitalWrite(leftMotorPin1, LOW);
    analogWrite(rightMotorPin2, right);
@@ -121,20 +121,19 @@ void turnRight() {                      // This function will make the battlebot
   delay(500);
   while(counterRight < 15) {
     readRotationRight();
-    left = 200;
-    right = 200;
-    digitalWrite(leftMotorPin2, LOW);
-    digitalWrite(leftMotorPin1, LOW);
-    digitalWrite(rightMotorPin2, LOW);
-    analogWrite(rightMotorPin1, right);
-  }while(counterLeft < 15) {
+    backwardsRight();
+  }
+  counterRight = 0;
+  brake();
+  while(counterRight < 11) {
+    readRotationRight();
+    driveForward();
+  }
+  counterRight = 0;
+  brake();
+  while(counterLeft < 17) {
     readRotationLeft();
-    left = 200;
-    right = 200;
-    digitalWrite(leftMotorPin1, LOW);
-    analogWrite(leftMotorPin2, left);
-    digitalWrite(rightMotorPin2, LOW);
-    digitalWrite(rightMotorPin1, LOW);
+    forwardsLeft();
   }
 }
 
@@ -142,22 +141,56 @@ void turnLeft() {                       // This function will make the battlebot
   delay(500);
   while(counterLeft < 15) {
     readRotationLeft();
-    left = 200;
-    right = 200;
-    digitalWrite(leftMotorPin2, LOW);
-    analogWrite(leftMotorPin1, left);
-    digitalWrite(rightMotorPin2, LOW);
-    digitalWrite(rightMotorPin1, LOW);
+    backwardsLeft();
   }
-  while(counterRight < 15) {
+  brake();
+  counterRight = 0;
+  while(counterRight < 11) {
     readRotationRight();
-    left = 200;
-    right = 200;
-    digitalWrite(leftMotorPin2, LOW);
-    digitalWrite(leftMotorPin1, LOW);
-    digitalWrite(rightMotorPin1, LOW);
-    analogWrite(rightMotorPin2, right);
+    driveForward();
   }
+  brake();
+  counterRight = 0;
+  while(counterRight < 17) {
+    readRotationRight();
+    forwardsRight();
+  }
+}
+
+void backwardsLeft() {
+  left = 200;
+  right = 200;
+  digitalWrite(leftMotorPin2, LOW);
+  analogWrite(leftMotorPin1, left);
+  digitalWrite(rightMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+}
+
+void forwardsLeft() {
+  left = 200;
+  right = 200;
+  analogWrite(leftMotorPin2, right);
+  digitalWrite(leftMotorPin1, LOW);
+  digitalWrite(rightMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+}
+
+void backwardsRight() {
+  left = 200;
+  right = 200;
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin1, right);
+  digitalWrite(rightMotorPin2, LOW);
+}
+
+void forwardsRight() {
+  left = 200;
+  right = 200;
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(leftMotorPin1, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
 }
 
 void turnAround() {                     // This function will make the battlebot make a 180 degree turn
@@ -248,20 +281,10 @@ void checkForPath() {
 
 void solveMaze() {
   detectWall();
-  if(distance < 21 && drivingToWall == false) {
+  if(distance < 8 && drivingToWall == false) {
     counterRight = 0;
     counterLeft = 0;
     drivingToWall = true;
-    brake();
-    distanceFromWall = distance;
-    pulseCount = (distanceFromWall / pulseDistance - 20);     // Calculate how many pulses until hit wall
-    Serial.print("Pulses to drive is: ");
-    Serial.println(pulseCount);
-    while(counterRight <= pulseCount) {                       // Drive the amount of pulses
-      driveForward();
-      readRotationRight();
-    }
-    counterRight = 0;
     brake();
     grabberLeft();                                            // Check for path on the left side
     delay(800);

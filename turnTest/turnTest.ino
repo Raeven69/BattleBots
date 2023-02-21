@@ -51,9 +51,12 @@ void setup() {
 
 //Loop
 void loop() { 
-  bluetooth();
-  turnAround();
   brake();
+  readRotation();
+  while(counter < 17) {
+    readRotation();
+    turnLeft();
+  }
 }
 
 
@@ -117,9 +120,7 @@ void turnLeft() {                       //This function will make the battlebot 
   analogWrite(leftMotorPin1, left);
   analogWrite(rightMotorPin2, right);
   digitalWrite(rightMotorPin1, LOW);
-  duration = pulseIn(leftRotationPin, HIGH);
-  turnDuration = duration * 0.0065;
-  delay(turnDuration);
+  
 }
 
 void turnAround() {                     //This function will make the battlebot make a 180 degree turn
@@ -144,13 +145,9 @@ void printRotationSensor() {
 }
 
 void readRotation() {
-    rotationState = digitalRead(leftRotationPin);
+    rotationState = digitalRead(rightRotationPin);
     if (rotationState != rotationLastState) {
-        if (digitalRead(rightRotationPin) != rotationState) {
-            counter--;
-        } else {
-            counter++;
-        }
+        counter++;   
     }
     Serial.println(counter);
     rotationLastState = rotationState;
