@@ -49,7 +49,7 @@ bool onceTurnRight = false;
 bool isTurnLeft = false;
 bool onceTurnLeft = false;
 
-int period = 1000;
+int period = 1750;
 unsigned long time_now = 0;
 
 int rotationState;
@@ -70,6 +70,8 @@ bool calibrating = true;
 // Sensor Calibration
 const int calibrationTime = 30; // in milliseconds * 20 (50 = 1 second)
 const bool shouldCalibrate = true;
+
+bool starting = true;
 
 int getLineSensorSensitivity(int margin = 80)
 {
@@ -108,7 +110,7 @@ void setup() {
 
   qtr.setTypeAnalog();
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-
+/*
  if (shouldCalibrate)
   {
     int i;
@@ -138,7 +140,7 @@ void setup() {
     calibratedValue = getLineSensorSensitivity();
     Serial.println(calibratedValue);
   }
-
+*/
 }
 
 
@@ -154,33 +156,35 @@ void loop() {
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   
-
-  if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false){
+  if (starting == true){
+    start();
+  }
+  else if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false && starting == false){
     followLine();
   }
-  else if (rotating == true){
+  else if (rotating == true && starting == false){
     rotate(180);
     rotating = false;
   }
-  else if (isTurnRight == true && onceTurnRight == false){
+  else if (isTurnRight == true && onceTurnRight == false && starting == false){
     moveForward(170,0);
     delay(400);
     moveStop();
     onceTurnRight = true;
     mySerial.println("onceTurnRight = true");
   }
-  else if (isTurnRight == true && onceTurnRight == true){
+  else if (isTurnRight == true && onceTurnRight == true && starting == false){
     turnRight();
     mySerial.println("turnRight");
   }
-  else if (isTurnLeft == true && onceTurnLeft == false){
+  else if (isTurnLeft == true && onceTurnLeft == false && starting == false){
     moveForward(0,150);
     delay(400);
     moveStop();
     onceTurnLeft = true;
     mySerial.println("onceTurnLeft = true");
   }
-  else if (isTurnLeft == true && onceTurnLeft == true){
+  else if (isTurnLeft == true && onceTurnLeft == true && starting == false){
     mySerial.println("Turning left");
     turnLeft();
   }
@@ -367,6 +371,11 @@ void followLine(){
           mySerial.println("Ik zie wat links");
           isTurnLeft = true;
         }
+        else if(farRight == 1 || outerRight == 1){
+          moveStop();
+          mySerial.println("Ik zie wat rechts");
+          isTurnRight = true;
+        }
       }
       moveStop();
       bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
@@ -427,4 +436,30 @@ void drive(int left, int right) {
         analogWrite(rightMotorBackward, 0);
     }
     isDriving = abs(left) + abs(right) > 0;
+}
+
+void start(){
+  if (shouldCalibrate)
+  {
+    int i;
+    for (i = 0; i < calibrationTime; i++)
+    {
+      drive(165,140);
+      qtr.calibrate();
+      delay(20);
+    }
+    Serial.println("");
+    Serial.println("Calibration complete");
+    calibratedValue = getLineSensorSensitivity();
+    Serial.println(calibratedValue);
+  }
+  if(outerLeft == 0 && farLeft == 0 && left == 0 && innerLeft == 0 && innerRight == 0 && right == 0 && farRight == 0 && outerRight == 0){ // Einde zwarte vlak is bereikt
+    drive(0,0);
+    delay(300);
+    // Close gripper
+    rotate(-90);
+    drive(160,140);
+    starting = false;
+  }
+  
 }
