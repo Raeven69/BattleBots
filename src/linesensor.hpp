@@ -44,11 +44,12 @@ void initLineSensor() {
 
 void updateLineData() {
     position = qtr.readLineBlack(sensorValues);
-    isOnLine = false;
+    bool isCurrentlyOnLine = false;
     for (int i = 0; i < 8; i++) {
-        if (sensorValues[i] > 975) {
-            isOnLine = true;
+        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 25) {
+            isCurrentlyOnLine = true;
             break;
         }
     }
+    isOnLine = isCurrentlyOnLine;
 }
