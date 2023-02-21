@@ -5,6 +5,28 @@
 
 char* lineDirection = "none";
 long nextLineDetection = millis();
+long lastAllOnLine = 0;
+bool wasAllOnLine = false;
+bool isFinished = false;
+
+void positionPawn()
+{
+    while (isAllOnLine())
+    {
+        drive(-150, -150);
+    }
+    while (!isAllOnLine())
+    {
+        drive(150, 150);
+    }
+    drive(0, 0);
+    delay(200);
+    openGrapper();
+    delay(200);
+    drive(-255, -255);
+    delay(1000);
+    drive(0, 0);
+}
 
 void avoidObstacle()
 {
@@ -20,14 +42,32 @@ void avoidObstacle()
     }
 }
 
+void checkFinished()
+{
+    if (isAllOnLine()) {
+        if (wasAllOnLine && lastAllOnLine > millis() - 500)
+        {
+            isFinished = true;
+        }
+        else if (!wasAllOnLine)
+        {
+            wasAllOnLine = true;
+            lastAllOnLine = millis();
+        }
+    }
+    else
+    {
+        wasAllOnLine = false;
+        lastAllOnLine = 0;
+    }
+}
+
 void followLine()
 {
     updateLineData();
     if (isOnLine)
     {
-        int leftWheelSpeed = (position < 2500) ? min(max((int)(255 * (3500 - position) / 3500), 50), 255) : 255;
-        int rightWheelSpeed = (position > 4500) ? min(max((int)(255 * (position - 3500) / 3500), 50), 255) : 255;
-        drive(leftWheelSpeed, rightWheelSpeed);
+        drive((position < 2500) ? min(max((int)(255 * (3500 - position) / 3500), 50), 255) : 255, (position > 4500) ? min(max((int)(255 * (position - 3500) / 3500), 50), 255) : 255);
         if (position < 1000)
         {
             lineDirection = "left";
@@ -65,20 +105,30 @@ void setup()
 
 void loop()
 {
-    if (!grapperClosed)
+    if (!isFinished)
     {
-        closeGrapper();
-    }
-    if (!isDriving)
-    {
-        drive(255, 255);
-    }
-    if (isBlocked())
-    {
-        avoidObstacle();
+        if (!grapperClosed)
+        {
+            closeGrapper();
+        }
+        if (!isDriving)
+        {
+            drive(255, 255);
+        }
+        if (isBlocked())
+        {
+            avoidObstacle();
+        }
+        else
+        {
+            checkFinished();
+            followLine();
+        }
     }
     else
     {
-        followLine();
+        positionPawn();
+        // bluetooth signaal naar volgende robot
+        victoryDance();
     }
 }

@@ -19,7 +19,7 @@ void calibrateSensor() {
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
     drive(255, 255);
-    delay(20);
+    delay(30);
     drive(86, 72);
     for (uint16_t i = 0; i < 150; i++){
         qtr.calibrate();
@@ -46,10 +46,22 @@ void updateLineData() {
     position = qtr.readLineBlack(sensorValues);
     bool isCurrentlyOnLine = false;
     for (int i = 0; i < 8; i++) {
-        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 50) {
+        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 75) {
             isCurrentlyOnLine = true;
             break;
         }
     }
     isOnLine = isCurrentlyOnLine;
+}
+
+bool isAllOnLine() {
+    position = qtr.readLineBlack(sensorValues);
+    bool allSensors = true;
+    for (int i = 0; i < 8; i++) {
+        if (sensorValues[i] < qtr.calibrationOn.maximum[i] - 75) {
+            allSensors = false;
+            break;
+        }
+    }
+    return allSensors;
 }
