@@ -14,17 +14,23 @@ uint16_t sensorValues[8];
 bool isOnLine;
 uint16_t position;
 
-bool calibrateSensor() {
-    return true;
-    digitalWrite(LED_BUILTIN, HIGH); 
+void calibrateSensor() {
+    digitalWrite(LED_BUILTIN, HIGH);
+    openGrapper(); 
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-    digitalWrite(LED_BUILTIN, HIGH); 
-    for (uint16_t i = 0; i < 400; i++){
+    digitalWrite(LED_BUILTIN, HIGH);
+    drive(255,255);
+    delay(20);
+    drive(86,72);
+    for (uint16_t i = 0; i < 150; i++){
         qtr.calibrate();
     }
-    digitalWrite(LED_BUILTIN, LOW); 
-    return false;
+    drive(0,0);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
+    closeGrapper();
+    rotate(-90);
 }
 
 void initLineSensor() {
@@ -36,9 +42,7 @@ void initLineSensor() {
     pinMode(lineSensorLeft, INPUT);
     pinMode(lineSensorFarLeft, INPUT);
     pinMode(lineSensorOuterLeft, INPUT);
-    while (calibrateSensor()){
-        drive(100,100);
-    }
+    calibrateSensor();
     
 }
 
