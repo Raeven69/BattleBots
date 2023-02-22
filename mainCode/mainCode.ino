@@ -74,7 +74,7 @@ void detectWall() {                     // This function activates the ultra son
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-   left = 251;
+   left = 252;
    right = 255;
    analogWrite(leftMotorPin2, left);
    digitalWrite(leftMotorPin1, LOW);
@@ -83,7 +83,7 @@ void driveForward() {                   // This function activates both motors a
 }
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
-   left = 251;
+   left = 252;
    right = 255;
    analogWrite(leftMotorPin1, left);
    digitalWrite(leftMotorPin2, LOW);
