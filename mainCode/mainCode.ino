@@ -132,7 +132,7 @@ void calibrateRight() {
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-   left = 252;
+   left = 247;
    right = 255;
    analogWrite(leftMotorPin2, left);
    digitalWrite(leftMotorPin1, LOW);
@@ -141,7 +141,7 @@ void driveForward() {                   // This function activates both motors a
 }
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
-   left = 252;
+   left = 247;
    right = 255;
    analogWrite(leftMotorPin1, left);
    digitalWrite(leftMotorPin2, LOW);
@@ -379,9 +379,16 @@ void checkPerSquare() {
           brake();
           counterLeft = 0;
           counterRight = 0;
-          turnRight();
+          if(turnedLeft == true) {
+            turnLeft();
+          }
+          else if(turnedRight == true) {
+            turnRight();
+          }
           brake();
           forwardOneSquare();
+          turnedLeft = false;
+          turnedRight = false;
           calibrating = false;
         }
         else {
@@ -394,6 +401,7 @@ void checkPerSquare() {
         delay(500);
         turnRight();
         turnedRight = true;
+        turnedLeft = false;
         brake();
         forwardOneSquare();
         calibrating = false;
@@ -404,6 +412,7 @@ void checkPerSquare() {
       delay(500);
       turnLeft();
       turnedLeft = true;
+      turnedRight = false;
       brake();
       forwardOneSquare();
       calibrating = false;
