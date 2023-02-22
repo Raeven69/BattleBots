@@ -3,6 +3,7 @@
 #include "src/sonar.hpp"
 #include "src/grapper.hpp"
 #include "src/linesensor.hpp"
+#include "src/neo.hpp"
 
 // Line direction variable for storing the location of the line incase the robot loses it
 char* lineDirection = "none";
@@ -110,12 +111,14 @@ void followLine()
     else if (lineDirection == "left")
     {
         drive(50, 255);
+        neoLeft();
         nextLineDetection = millis() + 1000;
     }
     // If it's supposedly on the right, steer to the right
     else if (lineDirection == "right")
     {
         drive(255, 50);
+        neoRight();
         nextLineDetection = millis() + 1000;
     }
 }
@@ -123,6 +126,9 @@ void followLine()
 void setup()
 {
     // Initialize the different modules
+    neoLed.begin();
+    neoLed.setBrightness(100);
+    neoCalibrate();
     initEngine();
     initGrapper();
     initLineSensor();
@@ -137,6 +143,7 @@ void loop()
         if (!isDriving)
         {
             drive(255, 255);
+            neoDrive();
         }
         // If an object is found in front of the robot, avoid it
         if (isBlocked())
