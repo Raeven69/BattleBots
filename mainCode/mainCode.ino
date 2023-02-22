@@ -33,6 +33,9 @@ const double wheelCircumference = 20.41;  // Circumference of the wheel in centi
 const double pulseDistance = 0.51;        // The amount of centimetres the battlebot will drive forward in 1 pulse
 const int rotation = 40;                  // The amount of pulses for the wheel to reach one rotation
 boolean drivingToWall = false;
+boolean calibrating = false;
+boolean turnedLeft = false;
+boolean turnedRight = false;
 
 
 
@@ -56,7 +59,7 @@ void setup() {
 
 //Loop
 void loop() {
-  checkForPath();
+  checkPerSquare();
 }
 
 
@@ -70,7 +73,62 @@ void detectWall() {                     // This function activates the ultra son
   digitalWrite(triggerPin, LOW);
   pinMode(echoPin, INPUT);
   duration = pulseIn(echoPin, HIGH); 
-  distance = duration * 0.034/2;
+  distance = (duration * 0.034)/2;
+  Serial.println(distance);
+  delay(10);
+}
+
+void forwardOneSquare() {
+  while(counterLeft < 50 && counterRight < 50) {
+    readRotationLeft();
+    readRotationRight();
+    driveForward();
+  }
+}
+
+void backwardOneSquare() {
+  while(counterLeft < 50 && counterRight < 50) {
+    readRotationLeft();
+    readRotationRight();
+    driveBackward();
+  }
+}
+
+void calibrate() {
+  
+}
+
+void calibrateLeft() {
+  delay(500);
+  while(counterLeft < 5) {
+    readRotationLeft();
+    backwardsLeft();
+  }
+  counterLeft = 0;
+  brake();
+  counterRight = 0;
+  while(counterRight < 7) {
+    readRotationRight();
+    driveForward();
+  }
+  brake();
+  counterRight = 0;
+  while(counterRight < 4) {
+    readRotationRight();
+    backwardsRight();
+  }
+  brake();
+  counterLeft = 0;
+  counterRight = 0;
+  while(counterLeft < 4) {
+    readRotationLeft();
+    driveBackward();
+  }
+  counterLeft = 0;
+}
+
+void calibrateRight() {
+  
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
@@ -128,6 +186,14 @@ void turnRight() {                      // This function will make the battlebot
     readRotationLeft();
     forwardsLeft();
   }
+  counterLeft = 0;
+  counterRight = 0;
+  brake();
+  while(counterLeft < 16) {
+    readRotationLeft();
+    driveBackward();
+  }
+  counterLeft = 0;
 }
 
 void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
@@ -148,6 +214,14 @@ void turnLeft() {                       // This function will make the battlebot
     readRotationRight();
     forwardsRight();
   }
+  counterLeft = 0;
+  counterRight = 0;
+  brake();
+  while(counterLeft < 16) {
+    readRotationLeft();
+    driveBackward();
+  }
+  counterLeft = 0;
 }
 
 void backwardsLeft() {                 // This function will make the left wheel turn backward
@@ -278,4 +352,70 @@ void checkForPath() {
     counterRight = 0;
     counterLeft = 0;
   }
+}
+
+void checkPerSquare() {
+  if(calibrating == false) {
+    counterLeft = 0;
+    counterRight = 0;
+    calibrating = true;
+    brake();
+    servoLeft();
+    delay(500);
+    detectWall();   
+    if(distance < 16) {
+      brake();
+      servoRight();
+      delay(500);
+      detectWall();
+      if(distance < 16) {
+        brake();
+        servoFront();
+        delay(500);
+        detectWall();
+        if(distance < 8) {
+          brake();
+          backwardOneSquare();
+          brake();
+          counterLeft = 0;
+          counterRight = 0;
+          turnRight();
+          brake();
+          forwardOneSquare();
+          calibrating = false;
+        }
+        else {
+          forwardOneSquare();
+          calibrating = false;
+        }
+      }
+      else {
+        servoFront();
+        delay(500);
+        turnRight();
+        turnedRight = true;
+        brake();
+        forwardOneSquare();
+        calibrating = false;
+      }
+    }
+    else {
+      servoFront();
+      delay(500);
+      turnLeft();
+      turnedLeft = true;
+      brake();
+      forwardOneSquare();
+      calibrating = false;
+    }
+  }
+  else {
+    calibrating = false;
+  }
+  //check if the bot is in the middle of the path
+  //check left, if between 4 and 25 cm, calibrate to the left
+  //check right, if between 4 and 25 cm, calibrate to the right
+  //check for a path on the left, if path then turn left, if no path
+  //check for a path on the right, if path then turn right, if no path, go forward one square
+  //if no path in the front, turn around and remember it is a dead end
 }
