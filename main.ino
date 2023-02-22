@@ -49,7 +49,7 @@ bool onceTurnRight = false;
 bool isTurnLeft = false;
 bool onceTurnLeft = false;
 
-int period = 2150;
+int period = 1900;
 unsigned long time_now = 0;
 
 int rotationState;
@@ -68,12 +68,12 @@ int calibratedValue;
 bool calibrating = true;
 
 // Sensor Calibration
-const int calibrationTime = 30; // in milliseconds * 20 (50 = 1 second)
+const int calibrationTime = 40; // in milliseconds * 20 (50 = 1 second)
 const bool shouldCalibrate = true;
 
 bool starting = true;
 
-int getLineSensorSensitivity(int margin = 80)
+int getLineSensorSensitivity(int margin = 100)
 {
     int totalSize = 0;
     for (int i = 0; i < 8; i++)
@@ -292,7 +292,7 @@ void followLine(){
     moveForward(110,190);
     mySerial.println("Naar links");
   }
-  else if ((outerRight == 1 && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1) || (left == 1 && farRight == 1) || (right == 1 && farRight == 1 && outerRight == 1) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1) || (left == 1 && innerLeft == 1 && outerRight == 1) || (left == 1 && farRight == 1)) {
+  else if (((outerRight == 1 && farLeft == 0) && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1 && farLeft == 0 && outerLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && innerLeft == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (farRight == 1 && outerRight == 1 && farLeft == 0) || (outerRight == 1 && (innerRight == 1 || innerLeft == 1 || left == 1)  && farLeft == 0)) {
     mySerial.println("Bocht naar rechts");
     moveStop();
     isTurnRight = true;
@@ -345,30 +345,12 @@ void followLine(){
       moveStop();
     }
     else{
-      mySerial.println("In de achteruit");
-      time_now = millis();
-      while(millis() < time_now + period){
-        bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-        bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-        bool right = analogRead(lineSensorRight) > calibratedValue;
-        bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-        bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-        bool left = analogRead(lineSensorLeft) > calibratedValue;
-        bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-        bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
-        moveBackward(162,145);
-        if(outerLeft == 1 || farLeft == 1 || left == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1)){
-          moveStop();
-          mySerial.println("Ik zie wat links");
-          isTurnLeft = true;
-        }
-        else if(farRight == 1 || outerRight == 1 || (right == 1 && (farLeft == 0 || outerLeft == 0))){
-          moveStop();
-          mySerial.println("Ik zie wat rechts");
-          isTurnRight = true;
-        }
-      }
-      moveStop();
+      drive(135,135);
+      delay(300);
+      drive(0,0);
+      delay(150);
+      rotate(90);
+      delay(200);
       bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
       bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
       bool right = analogRead(lineSensorRight) > calibratedValue;
@@ -377,20 +359,27 @@ void followLine(){
       bool left = analogRead(lineSensorLeft) > calibratedValue;
       bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
       bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
-      mySerial.println("LET OP: " + String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-      if(outerLeft == 1 || farLeft == 1 || (outerLeft == 1 && farLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1) || (outerLeft == 1 && farLeft == 1 && left == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1) || (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1)){
-        mySerial.println("Ik zie wat links");
-        mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-        isTurnLeft = true;
-      }
-      else if(farRight == 1 || outerRight == 1 || (right == 1 && (farLeft == 0 || outerLeft == 0))){
-          moveStop();
-          mySerial.println("Ik zie wat rechts");
-          isTurnRight = true;
+      if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
+        rotate(-180);  
+        delay(200);
+        bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+        bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+        bool right = analogRead(lineSensorRight) > calibratedValue;
+        bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+        bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+        bool left = analogRead(lineSensorLeft) > calibratedValue;
+        bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+        bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+        if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
+          rotate(-93);
+          delay(200);
         }
+        else{
+          return;
+        }
+      }
       else{
-        rotating = true;
-        mySerial.println("Ik zie links niks");
+        return;
       }
     }
   }
@@ -440,7 +429,9 @@ void start(){
     int i;
     for (i = 0; i < calibrationTime; i++)
     {
-      drive(143,125);
+      drive(200,200);
+      delay(10);
+      drive(99,75);
       qtr.calibrate();
       delay(20);
     }
@@ -453,7 +444,7 @@ void start(){
     drive(0,0);
     delay(300);
     // Close gripper
-    rotate(-90);
+    rotate(-92);
     drive(155,130);
     starting = false;
   }
