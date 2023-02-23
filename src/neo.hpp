@@ -1,4 +1,4 @@
-#include <Adafruit_NeoPixel.h>
+#include "lib/Adafruit_NeoPixel.hpp"
 
 #define LED_PIN   9
 #define NUMPIXELS  4

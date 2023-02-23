@@ -4,6 +4,7 @@
 #include "src/grapper.hpp"
 #include "src/linesensor.hpp"
 #include "src/neo.hpp"
+#include "src/bluetooth.hpp"
 
 // Line direction variable for storing the location of the line incase the robot loses it
 char* lineDirection = "none";
@@ -133,6 +134,7 @@ void setup()
     initGrapper();
     initLineSensor();
     initSonar();
+    initBluetooth();
 }
 
 void loop()
