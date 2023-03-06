@@ -141,7 +141,7 @@ void driveForward() {                   // This function activates both motors a
 }
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
-   left = 247;
+   left = 250;
    right = 255;
    analogWrite(leftMotorPin1, left);
    digitalWrite(leftMotorPin2, LOW);
@@ -260,15 +260,24 @@ void forwardsRight() {                  // This function will make the right whe
   analogWrite(rightMotorPin2, right);
 }
 
-void turnAround() {                     // This function will make the battlebot make a 180 degree turn
+void around() {                       // This function will make the wheels turn around
   left = 255;
   right = 255;
-  digitalWrite(leftMotorPin2, LOW);
-  analogWrite(leftMotorPin1, left);
-  analogWrite(rightMotorPin2, right);
-  digitalWrite(rightMotorPin1, LOW);
-  delay(1025);
+  analogWrite(leftMotorPin2, left);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin1, right);
+  digitalWrite(rightMotorPin2, LOW);
 }
+
+void turnAround() {                 // This function will make the battlebot make a 180 degree turn to the left
+  delay(500);
+  while(counterRight < 30) {
+    readRotationRight();
+    around();
+  }
+  counterRight = 0;
+}
+
 
 void readRotationRight() {              // This function will read the pulses of the right rotation sensor
     rotationStateRight = digitalRead(rightRotationPin);
@@ -321,7 +330,7 @@ void checkForPath() {
     drivingToWall = true;                                     // Let the arduino know its driving to a wall
     brake();
     servoLeft();                                              // Check for path on the left side
-    delay(800);
+    delay(500);
     detectWall();
     if(distance > 0 && distance < 20) {                       // If there is no path, check for a path on the right side
       servoRight();
@@ -373,20 +382,14 @@ void checkPerSquare() {
         servoFront();
         delay(500);
         detectWall();
-        if(distance < 8) {
+        if(distance < 12) {
           brake();
           backwardOneSquare();
           brake();
           counterLeft = 0;
           counterRight = 0;
-          if(turnedLeft == true) {
-            turnLeft();
-          }
-          else if(turnedRight == true) {
-            turnRight();
-          }
+          turnAround();
           brake();
-          forwardOneSquare();
           turnedLeft = false;
           turnedRight = false;
           calibrating = false;
