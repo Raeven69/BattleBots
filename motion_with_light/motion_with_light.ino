@@ -15,8 +15,7 @@ const int rightMotorForward = 9;     //A2 <- Motor
 const int leftMotorBackward = 10;    //A1 <- Motor
 const int rightMotorBackward = 6;    //B1 <- Motor
 
-unsigned long timerNe= 0;            //start value for millis Neopixels
-
+unsigned long timerNe = 0;           //start value for millis Neopixels
 
 /************************
  ***       setup      ***
@@ -40,14 +39,14 @@ void setup() {
 
 void loop() {
   //===[motion]=======================================================
-  motionForward(150, 150);
-  stationary();
+  /*motionForward(150, 150);
+  stationary();*/
   motionLeft(180, 0, 150);
-  stationary();
+  /*stationary();
   motionBackward(150, 150);
   stationary();
   motionRight(0, 180, 150);
-  stationary();
+  stationary();*/
 }
 
 /************************
@@ -57,11 +56,12 @@ void loop() {
 //===[Motion Forward]=================================================
   //...
 void motionForward(int left, int right){
+    
   analogWrite(leftMotorForward, left);
   analogWrite(rightMotorForward, right);
   digitalWrite(leftMotorBackward, LOW);
   digitalWrite(rightMotorBackward, LOW);
-
+  
   strip.clear();
   strip.setPixelColor(2, strip.Color(255, 255, 255));
   strip.setPixelColor(3, strip.Color(255, 255, 255));  
