@@ -1,3 +1,6 @@
+// Include code for controlling the NeoPixel leds
+#include "neo.hpp"
+
 // I/O pins for the engine
 const int leftMotorPin1 = 5;
 const int leftMotorPin2 = 6;
@@ -15,7 +18,7 @@ int rightRotationLastState;
 // Variable to indicate whether the robot is driving or not
 bool isDriving = false;
 
-// Initialize the engine pins
+// Initialize the engine pins and NeoPixels
 void initEngine()
 {
     pinMode(leftMotorPin1, OUTPUT);
@@ -24,6 +27,7 @@ void initEngine()
     pinMode(rightMotorPin2, OUTPUT);
     pinMode(leftRotationPin, INPUT);
     pinMode(rightRotationPin, INPUT);
+    initNeoPixels();
 }
 
 // Function to set the engine speeds of the robot
@@ -53,6 +57,8 @@ void drive(int left, int right)
         analogWrite(rightMotorPin1, right);
         analogWrite(rightMotorPin2, 0);
     }
+    // Update the NeoPixels according to the speed
+    neoDrive(left, right);
     // Update the variable to keep track of whether the robot is moving
     isDriving = abs(left) + abs(right) > 0;
 }
@@ -86,4 +92,6 @@ void rotate(int rotation)
     }
     // Stop rotating when the amount of degrees to rotate has been reached
     drive(0, 0);
+    // Also reset the NeoPixels
+    neoDrive(0, 0);
 }
