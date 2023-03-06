@@ -19,16 +19,6 @@ bool isFinished = false;
 // Function for positioning the pawn at the end of the course
 void positionPawn()
 {
-    // Position the robot behind the black square
-    while (isAllOnLine())
-    {
-        drive(-150, -150);
-    }
-    // Then position the robot at the edge of the black square so the pawn is centered
-    while (!isAllOnLine())
-    {
-        drive(150, 150);
-    }
     drive(0, 0);
     delay(200);
     // Open the grapper and drive backwards for 1 second
@@ -152,10 +142,10 @@ void loop()
             followLine();
         }
     }
-    // If the robot is finished, position the pawn on the black square, and do nothing
+    // If the robot is finished, position the pawn on the black square, and flash the NeoPixel leds for eternity
     else
     {
         positionPawn();
-        delay(INFINITY);
+        neoFinish();
     }
 }

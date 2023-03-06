@@ -73,6 +73,7 @@ void updateLineData()
 // Function for checking whether all sensors are seeing a black line
 bool isAllOnLine()
 {
+    updateLineData();
     bool allSensors = true;
     for (int i = 0; i < 8; i++)
     {
