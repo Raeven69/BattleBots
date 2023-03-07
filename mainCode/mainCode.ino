@@ -33,7 +33,7 @@ const double wheelCircumference = 20.41;  // Circumference of the wheel in centi
 const double pulseDistance = 0.51;        // The amount of centimetres the battlebot will drive forward in 1 pulse
 const int rotation = 40;                  // The amount of pulses for the wheel to reach one rotation
 boolean drivingToWall = false;
-boolean calibrating = false;
+boolean checking = false;
 boolean turnedLeft = false;
 boolean turnedRight = false;
 
@@ -95,7 +95,12 @@ void backwardOneSquare() {
 }
 
 void calibrate() {
-  
+  //check if the bot is in the middle of the path
+  //check left, if between 4 and 25 cm, calibrate to the left
+  //check right, if between 4 and 25 cm, calibrate to the right
+  //check for a path on the left, if path then turn left, if no path
+  //check for a path on the right, if path then turn right, if no path, go forward one square
+  //if no path in the front, turn around and remember it is a dead end
 }
 
 void calibrateLeft() {
@@ -132,7 +137,7 @@ void calibrateRight() {
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-   left = 247;
+   left = 250;
    right = 255;
    analogWrite(leftMotorPin2, left);
    digitalWrite(leftMotorPin1, LOW);
@@ -141,7 +146,7 @@ void driveForward() {                   // This function activates both motors a
 }
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
-   left = 250;
+   left = 252;
    right = 255;
    analogWrite(leftMotorPin1, left);
    digitalWrite(leftMotorPin2, LOW);
@@ -301,7 +306,7 @@ void servoLeft() {                   // This function will make the servo turn t
   delayMicroseconds(2600); // Duration of the pusle in microseconds
   digitalWrite(servoPin, LOW);
   delayMicroseconds(18550); // 20ms - duration of the pusle
-  // Pulses duration: 650 - 0deg; 1650 - 90deg; 2600 - 180deg
+  // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
 void servoFront() {                  // This function will make the servo turn to the front
@@ -310,16 +315,16 @@ void servoFront() {                  // This function will make the servo turn t
   delayMicroseconds(1650); // Duration of the pusle in microseconds
   digitalWrite(servoPin, LOW);
   delayMicroseconds(18550); // 20ms - duration of the pusle
-  // Pulses duration: 650 - 0deg; 1650 - 90deg; 2600 - 180deg
+  // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
 void servoRight() {                   // This function will make the servo turn to the right
   // A pulse each 20ms
   digitalWrite(servoPin, HIGH);
-  delayMicroseconds(650); // Duration of the pusle in microseconds
+  delayMicroseconds(600); // Duration of the pusle in microseconds
   digitalWrite(servoPin, LOW);
   delayMicroseconds(18550); // 20ms - duration of the pusle
-  // Pulses duration: 650 - 0deg; 1650 - 90deg; 2600 - 180deg
+  // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
 void checkForPath() {
@@ -364,25 +369,25 @@ void checkForPath() {
 }
 
 void checkPerSquare() {
-  if(calibrating == false) {
-    counterLeft = 0;
-    counterRight = 0;
-    calibrating = true;
-    brake();
-    servoLeft();
+  if(checking == false) {                                     // Check if the function is already running
+    counterLeft = 0;                                          // Reset the left pulse count
+    counterRight = 0;                                         // Reset the right pulse count
+    checking = true;                                          
+    brake();    
+    servoLeft();                                              // Position the servo to look to the left
     delay(500);
-    detectWall();   
-    if(distance < 16) {
+    detectWall();                                             // Activates the ultra sonic distance sensor and checks if there is a wall
+    if(distance < 20) {                                       // If a wall is detected on the left side, position the servo to look to the right
       brake();
       servoRight();
       delay(500);
       detectWall();
-      if(distance < 16) {
+      if(distance < 20) {                                     // If a wall is detected on the right side, position the servo to the front
         brake();
         servoFront();
         delay(500);
-        detectWall();
-        if(distance < 12) {
+        detectWall(); 
+        if(distance < 15) {                                   // If a wall is detected on the front side, the battlebot will turn around
           brake();
           backwardOneSquare();
           brake();
@@ -392,14 +397,14 @@ void checkPerSquare() {
           brake();
           turnedLeft = false;
           turnedRight = false;
-          calibrating = false;
+          checking = false;
         }
-        else {
+        else {                                                // If no path is detected on the sides, drive one square forward
           forwardOneSquare();
-          calibrating = false;
+          checking = false;
         }
       }
-      else {
+      else {                                                 // If a path is detected on the right side, turn to the right
         servoFront();
         delay(500);
         turnRight();
@@ -407,10 +412,10 @@ void checkPerSquare() {
         turnedLeft = false;
         brake();
         forwardOneSquare();
-        calibrating = false;
+        checking = false;
       }
     }
-    else {
+    else {                                                  // If a path is detected on the left side, turn to the left
       servoFront();
       delay(500);
       turnLeft();
@@ -418,16 +423,10 @@ void checkPerSquare() {
       turnedRight = false;
       brake();
       forwardOneSquare();
-      calibrating = false;
+      checking = false;
     }
   }
   else {
-    calibrating = false;
+    checking = false;
   }
-  //check if the bot is in the middle of the path
-  //check left, if between 4 and 25 cm, calibrate to the left
-  //check right, if between 4 and 25 cm, calibrate to the right
-  //check for a path on the left, if path then turn left, if no path
-  //check for a path on the right, if path then turn right, if no path, go forward one square
-  //if no path in the front, turn around and remember it is a dead end
 }
