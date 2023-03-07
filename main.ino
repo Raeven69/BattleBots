@@ -312,16 +312,16 @@ void followLine(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (innerLeft == 0 && innerRight == 1){
-    moveForward(200,174);
+    moveForward(200,165);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (left == 1){
-    moveForward(135,200);
+    moveForward(150,200);
     mySerial.println("Iets naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (right == 1){
-    moveForward(200,135);
+    moveForward(210,130);
     mySerial.println("Iets naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
