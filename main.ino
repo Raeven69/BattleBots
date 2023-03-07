@@ -293,6 +293,8 @@ void followLine(){
   }
   
   if (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1){
+    moveForward(160,200);
+    delay(20);
     moveForward(110,190);
     mySerial.println("Naar links");
   }
@@ -302,7 +304,7 @@ void followLine(){
     isTurnRight = true;
   }
   else if (innerLeft == 1 && innerRight == 1){
-    moveForward(200,200);
+    moveForward(200,190);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (innerLeft == 1 && innerRight == 0){
@@ -310,7 +312,7 @@ void followLine(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (innerLeft == 0 && innerRight == 1){
-    moveForward(200,180);
+    moveForward(200,174);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   else if (left == 1){
@@ -391,7 +393,7 @@ void followLine(){
 
 void rotate(int rotation) {
     int counter = 0;
-    while (counter < (int)((135.0/360.0) * abs(rotation))) { 
+    while (counter < (int)((135.0/360.0) * abs(rotation))) { // 135.0 / 360.0
         if (rotation > 0) {
             drive(160, -160);
         } else {
@@ -437,7 +439,7 @@ void start(){
       delay(10);
       drive(99,75);
       qtr.calibrate();
-      delay(20);
+      delay(30);
     }
     Serial.println("");
     Serial.println("Calibration complete");
