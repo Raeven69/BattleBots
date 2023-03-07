@@ -78,7 +78,7 @@ void detectWall() {                     // This function activates the ultra son
   delay(10);
 }
 
-void forwardOneSquare() {
+void forwardOneSquare() {               // This function makes the battlebot drive on square forward in the maze
   while(counterLeft < 50 && counterRight < 50) {
     readRotationLeft();
     readRotationRight();
@@ -86,7 +86,7 @@ void forwardOneSquare() {
   }
 }
 
-void backwardOneSquare() {
+void backwardOneSquare() {              // This function makes the battlebot drive on square backward in the maze
   while(counterLeft < 50 && counterRight < 50) {
     readRotationLeft();
     readRotationRight();
@@ -94,22 +94,33 @@ void backwardOneSquare() {
   }
 }
 
-void calibrate() {
-  //check if the bot is in the middle of the path
-  //check left, if between 4 and 25 cm, calibrate to the left
-  //check right, if between 4 and 25 cm, calibrate to the right
-  //check for a path on the left, if path then turn left, if no path
-  //check for a path on the right, if path then turn right, if no path, go forward one square
-  //if no path in the front, turn around and remember it is a dead end
+void calibrate() {                            // Check if the bot is in the middle of the path
+  servoLeft();                                // Position the servo to the left side
+  delay(500);                                 
+  detectWall();                               // Activate the ultra sonic distance sensor
+  if(distance > 12 && distance < 25) {        // Check left, if between 12 and 25cm, calibrate to the left
+    calibrateLeft();                        
+    servoFront();
+  }
+  delay(500);
+  servoRight();
+  delay(500);
+  detectWall();
+  if(distance > 12 && distance < 25) {         // Check right, if between 12 and 25 cm, calibrate to the right
+    calibrateRight();
+    servoFront();
+  }
+  servoFront();
 }
 
-void calibrateLeft() {
+void calibrateLeft() {                        // This function makes the battle bot calibrate to the left
   delay(500);
   while(counterLeft < 5) {
     readRotationLeft();
     backwardsLeft();
   }
   counterLeft = 0;
+  counterRight = 0;
   brake();
   counterRight = 0;
   while(counterRight < 7) {
@@ -118,9 +129,42 @@ void calibrateLeft() {
   }
   brake();
   counterRight = 0;
+  counterLeft = 0;
   while(counterRight < 4) {
     readRotationRight();
     backwardsRight();
+  }
+  brake();
+  counterRight = 0;
+  counterLeft = 0;
+  while(counterLeft < 4) {
+    readRotationLeft();
+    driveBackward();
+  }
+  counterLeft = 0;
+  counterRight = 0;
+}
+
+void calibrateRight() {                           // This function makes the battlebot calibrate to the right
+  delay(500);
+  while(counterRight < 5) {
+    readRotationRight();
+    backwardsRight();
+  }
+  counterLeft = 0;
+  counterRight = 0;
+  brake();
+  counterRight = 0;
+  while(counterRight < 7) {
+    readRotationRight();
+    driveForward();
+  }
+  brake();
+  counterLeft = 0;
+  counterRight = 0;
+  while(counterLeft < 4) {
+    readRotationLeft();
+    backwardsLeft();
   }
   brake();
   counterLeft = 0;
@@ -130,47 +174,44 @@ void calibrateLeft() {
     driveBackward();
   }
   counterLeft = 0;
-}
-
-void calibrateRight() {
-  
+  counterRight = 0;
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-   left = 250;
-   right = 255;
-   analogWrite(leftMotorPin2, left);
-   digitalWrite(leftMotorPin1, LOW);
-   analogWrite(rightMotorPin2, right);
-   digitalWrite(rightMotorPin1, LOW);   
+  left = 251;
+  right = 255;
+  analogWrite(leftMotorPin2, left);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
+  digitalWrite(rightMotorPin1, LOW);   
 }
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
-   left = 252;
-   right = 255;
-   analogWrite(leftMotorPin1, left);
-   digitalWrite(leftMotorPin2, LOW);
-   analogWrite(rightMotorPin1, right);
-   digitalWrite(rightMotorPin2, LOW);   
+  left = 255;
+  right = 255;
+  analogWrite(leftMotorPin1, left);
+  digitalWrite(leftMotorPin2, LOW);
+  analogWrite(rightMotorPin1, right);
+  digitalWrite(rightMotorPin2, LOW);   
 }
 
 void brake() {                          // This function deactivates both motors and will make the battlebot stop driving for a short time
-   left = 0;
-   right = 0;
-   analogWrite(leftMotorPin2, LOW);
-   digitalWrite(leftMotorPin1, LOW);
-   analogWrite(rightMotorPin2, LOW);
-   digitalWrite(rightMotorPin1, LOW);
-   delay(500); 
+  left = 0;
+  right = 0;
+  analogWrite(leftMotorPin2, LOW);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+  delay(500); 
 }
 
 void stop() {                          // This function deactivates both motors and will make the battlebot stop driving
-   left = 0;
-   right = 0;
-   analogWrite(leftMotorPin2, left);
-   digitalWrite(leftMotorPin1, LOW);
-   analogWrite(rightMotorPin2, right);
-   digitalWrite(rightMotorPin1, LOW); 
+  left = 0;
+  right = 0;
+  analogWrite(leftMotorPin2, left);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
+  digitalWrite(rightMotorPin1, LOW); 
 }
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
@@ -285,19 +326,19 @@ void turnAround() {                 // This function will make the battlebot mak
 
 
 void readRotationRight() {              // This function will read the pulses of the right rotation sensor
-    rotationStateRight = digitalRead(rightRotationPin);
-    if(rotationStateRight != rotationLastStateRight) {
-        counterRight++;   
-    }
-    rotationLastStateRight = rotationStateRight;
+  rotationStateRight = digitalRead(rightRotationPin);
+  if(rotationStateRight != rotationLastStateRight) {
+      counterRight++;   
+  }
+  rotationLastStateRight = rotationStateRight;
 }
 
 void readRotationLeft() {               // This function will read the pulses of the left rotation sensor
-    rotationStateLeft = digitalRead(leftRotationPin);
-    if(rotationStateLeft != rotationLastStateLeft) {
-        counterLeft++;   
-    }
-    rotationLastStateLeft = rotationStateLeft;
+  rotationStateLeft = digitalRead(leftRotationPin);
+  if(rotationStateLeft != rotationLastStateLeft) {
+      counterLeft++;   
+  }
+  rotationLastStateLeft = rotationStateLeft;
 }
 
 void servoLeft() {                   // This function will make the servo turn to the left 
@@ -327,49 +368,11 @@ void servoRight() {                   // This function will make the servo turn 
   // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
-void checkForPath() {
-  detectWall();
-  if(distance > 0 && distance < 8 && drivingToWall == false) {// Check for a wall and check if the function is already activated
-    counterRight = 0;                                         // Reset the right pulse count
-    counterLeft = 0;                                          // Reset the left pulse count
-    drivingToWall = true;                                     // Let the arduino know its driving to a wall
-    brake();
-    servoLeft();                                              // Check for path on the left side
-    delay(500);
-    detectWall();
-    if(distance > 0 && distance < 20) {                       // If there is no path, check for a path on the right side
-      servoRight();
-      delay(800);
-      detectWall();
-      if(distance > 0 && distance < 20) {                     // If there is no path, drive backwards the same distance, and make the same last made turn to position the bot
-        servoFront();
-        turnAround();
-        brake();
-        drivingToWall = false;
-      }
-      else {                                                  // If there is a path, make a 90 degree right turn
-        servoFront();
-        turnRight();
-        brake();
-        drivingToWall = false;
-      }
-    }
-    else {                                                    // If there is a path, make a 90 degree left turn
-      servoFront();
-      turnLeft();
-      brake();
-      drivingToWall = false;
-    }
-  }
-  else {
-    driveForward();                                           // If there is no wall, drive forward
-    counterRight = 0;
-    counterLeft = 0;
-  }
-}
-
 void checkPerSquare() {
   if(checking == false) {                                     // Check if the function is already running
+    //brake();
+    //calibrate();                                              // If necessary, calibrate
+    //brake();
     counterLeft = 0;                                          // Reset the left pulse count
     counterRight = 0;                                         // Reset the right pulse count
     checking = true;                                          
