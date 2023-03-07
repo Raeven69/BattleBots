@@ -2,15 +2,17 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #define bluetoothRX 2
-#define bluetoothTX 3
+#define bluetoothTX 10
 SoftwareSerial mySerial(bluetoothRX, bluetoothTX);
 
 QTRSensors qtr;
 
+const int gripperPin = 8;
+
 const int leftMotorForward = 5; //5
 const int leftMotorBackward = 6; //6
-const int rightMotorForward = 9; //9
-const int rightMotorBackward = 10; //10
+const int rightMotorForward = 3; //9
+const int rightMotorBackward = 11; //10
 
 const int leftRotationPin = 7;
 const int rightRotationPin = 4;
@@ -66,6 +68,8 @@ bool rotating = false;
 int calibratedValue;
 
 bool calibrating = true;
+
+bool gripperClosed = false;
 
 // Sensor Calibration
 const int calibrationTime = 40; // in milliseconds * 20 (50 = 1 second)
