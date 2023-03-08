@@ -166,29 +166,29 @@ void loop() {
   else if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false && starting == false){
     followLine();
   }
-  else if (rotating == true && starting == false){
+  else if (rotating == true && starting == false && endReached == false){
     rotate(180);
     rotating = false;
   }
-  else if (isTurnRight == true && onceTurnRight == false && starting == false){
+  else if (isTurnRight == true && onceTurnRight == false && starting == false && endReached == false){
     moveForward(170,0);
     delay(400);
     moveStop();
     onceTurnRight = true;
     mySerial.println("onceTurnRight = true");
   }
-  else if (isTurnRight == true && onceTurnRight == true && starting == false){
+  else if (isTurnRight == true && onceTurnRight == true && starting == false && endReached == false){
     turnRight();
     mySerial.println("turnRight");
   }
-  else if (isTurnLeft == true && onceTurnLeft == false && starting == false){
+  else if (isTurnLeft == true && onceTurnLeft == false && starting == false && endReached == false){
     moveForward(0,150);
     delay(400);
     moveStop();
     onceTurnLeft = true;
     mySerial.println("onceTurnLeft = true");
   }
-  else if (isTurnLeft == true && onceTurnLeft == true && starting == false){
+  else if (isTurnLeft == true && onceTurnLeft == true && starting == false && endReached == false){
     mySerial.println("Turning left");
     turnLeft();
   }
@@ -247,7 +247,7 @@ void turnRight(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(170,0);
   }
-  if (innerLeft == 1 || (innerRight == 1 && innerLeft == 1)){
+  if (innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){
     moveStop();
     isTurnRight = false;
     onceTurnRight = false;
@@ -291,12 +291,30 @@ void followLine(){
       endReached = true;
     }
   }
-  
-  if (outerLeft == 1 && farLeft == 1 && left == 1 && innerLeft == 1 && innerRight == 1 && right == 1 && farRight == 1){
-    moveForward(160,200);
-    delay(20);
-    moveForward(110,190);
-    mySerial.println("Naar links");
+  if(right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1){
+    drive(0,0);
+    delay(100);
+    drive(150,135);
+    delay(200);
+    drive(0,0);
+    bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+    bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
+    bool right = analogRead(lineSensorRight) > calibratedValue;
+    bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+    bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+    bool left = analogRead(lineSensorLeft) > calibratedValue;
+    bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+    bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+    if((right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (outerRight == 1 && farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1)){
+       drive(-170, -150);
+       delay(380);
+       drive(0,0);
+       // openGripper();
+       delay(800); 
+       drive(-170, -150);
+       delay(500);
+       endReached = true;
+    }
   }
   else if (((outerRight == 1 && farLeft == 0) && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1 && farLeft == 0 && outerLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && innerLeft == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (farRight == 1 && outerRight == 1 && farLeft == 0) || (outerRight == 1 && (innerRight == 1 || innerLeft == 1 || left == 1)  && farLeft == 0)) {
     mySerial.println("Bocht naar rechts");
