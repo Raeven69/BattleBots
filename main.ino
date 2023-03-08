@@ -447,6 +447,7 @@ void start(){
     Serial.println(calibratedValue);
   }
   if(outerLeft == 0 && farLeft == 0 && left == 0 && innerLeft == 0 && innerRight == 0 && right == 0 && farRight == 0 && outerRight == 0){ // Einde zwarte vlak is bereikt
+    delay(50);
     drive(0,0);
     delay(300);
     // Close gripper
