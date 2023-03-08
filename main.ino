@@ -1,13 +1,12 @@
 #include <QTRSensors.h>
-#include <Servo.h>
 #include <SoftwareSerial.h>
 #define bluetoothRX 2
-#define bluetoothTX 10
+#define bluetoothTX 8 // 8
 SoftwareSerial mySerial(bluetoothRX, bluetoothTX);
 
-QTRSensors qtr;
+const int gripperPin = 10; // 10
 
-const int gripperPin = 8;
+QTRSensors qtr;
 
 const int leftMotorForward = 5; //5
 const int leftMotorBackward = 6; //6
@@ -90,6 +89,7 @@ int getLineSensorSensitivity(int margin = 100)
 
 void setup() {
   // put your setup code here, to run once:
+  
   pinMode(lineSensorOuterRight, INPUT);
   pinMode(lineSensorFarRight, INPUT);
   pinMode(lineSensorRight, INPUT);
@@ -103,6 +103,8 @@ void setup() {
   pinMode(leftMotorBackward, OUTPUT);
   pinMode(rightMotorForward, OUTPUT);
   pinMode(rightMotorBackward, OUTPUT);
+
+  pinMode(gripperPin, OUTPUT);
 
   Serial.begin(9600);
   while (!Serial) {
@@ -161,6 +163,7 @@ void loop() {
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   
   if (starting == true){
+    openGripper();
     start();
   }
   else if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false && starting == false){
@@ -309,10 +312,10 @@ void followLine(){
        drive(-170, -150);
        delay(380);
        drive(0,0);
-       // openGripper();
+       openGripper();
        delay(800); 
        drive(-170, -150);
-       delay(500);
+       delay(800);
        endReached = true;
     }
   }
@@ -467,11 +470,19 @@ void start(){
   if(outerLeft == 0 && farLeft == 0 && left == 0 && innerLeft == 0 && innerRight == 0 && right == 0 && farRight == 0 && outerRight == 0){ // Einde zwarte vlak is bereikt
     delay(50);
     drive(0,0);
+    closeGripper();
     delay(300);
-    // Close gripper
     rotate(-92);
     drive(155,130);
     starting = false;
   }
   
+}
+
+void openGripper() {
+  analogWrite(gripperPin, 203);
+}
+
+void closeGripper() {
+  analogWrite(gripperPin, 165);
 }
