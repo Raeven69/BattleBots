@@ -1,5 +1,6 @@
 #include <QTRSensors.h>
 #include <SoftwareSerial.h>
+#include <Adafruit_NeoPixel.h>
 #define bluetoothRX 2
 #define bluetoothTX 8 // 8
 SoftwareSerial mySerial(bluetoothRX, bluetoothTX);
@@ -24,6 +25,10 @@ const int lineSensorInnerLeft = A4;
 const int lineSensorLeft = A5;
 const int lineSensorFarLeft= A6;
 const int lineSensorOuterLeft = A7;
+
+const int ledPin = 12; //NI <- Neopixel
+const int ledCount = 4; //Amount Neopixels
+Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);
 
 bool goesForward = false;
 bool isDriving = false;
@@ -52,6 +57,7 @@ bool onceTurnLeft = false;
 
 int period = 1900;
 unsigned long time_now = 0;
+unsigned long timeNe = 0; // Start value for millis Neopixel
 
 int rotationState;
 int rotationLastState;
@@ -106,6 +112,19 @@ void setup() {
 
   pinMode(gripperPin, OUTPUT);
 
+//===[Neopixels]========================================================
+  #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
+    clock_prescale_set(clock_div_1);
+  #endif
+    strip.begin();                   // INITIALIZE NeoPixel strip object
+    strip.show();                    // Turn OFF all pixels
+    strip.setBrightness(100);        // Set BRIGHTNESS
+    
+  pinMode(ledPin, OUTPUT);
+  pinMode(leftMotorForward, OUTPUT);
+  pinMode(rightMotorForward, OUTPUT);
+  pinMode(leftMotorBackward, OUTPUT);
+  pinMode(rightMotorBackward, OUTPUT);
   Serial.begin(9600);
   while (!Serial) {
     ;
@@ -167,13 +186,16 @@ void loop() {
     start();
   }
   else if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false && starting == false){
+    forwardLight();
     followLine();
   }
   else if (rotating == true && starting == false && endReached == false){
+    rotateLight();
     rotate(180);
     rotating = false;
   }
   else if (isTurnRight == true && onceTurnRight == false && starting == false && endReached == false){
+    rightLight();
     moveForward(170,0);
     delay(400);
     moveStop();
@@ -181,6 +203,7 @@ void loop() {
     mySerial.println("onceTurnRight = true");
   }
   else if (isTurnRight == true && onceTurnRight == true && starting == false && endReached == false){
+    rightLight();
     turnRight();
     mySerial.println("turnRight");
   }
@@ -200,6 +223,45 @@ void loop() {
   }
 
 }
+
+void forwardLight(){
+  strip.clear();
+  strip.setPixelColor(2, strip.Color(255, 255, 255));
+  strip.setPixelColor(3, strip.Color(255, 255, 255));  
+  strip.show();
+  }
+  
+void rotateLight(){
+  strip.clear();
+  strip.setPixelColor(0, strip.Color(0, 255, 0));
+  strip.setPixelColor(1, strip.Color(0, 255, 0));
+  strip.setPixelColor(2, strip.Color(0, 255, 0));
+  strip.setPixelColor(3, strip.Color(0, 255, 0));
+  strip.show();
+  }
+
+void leftLight(){
+  strip.clear();
+  strip.clear();
+  if(millis() >= timeNe + 150){
+    timeNe = millis() + 150;
+    
+    strip.setPixelColor(0, strip.Color(255, 255, 50));
+    strip.setPixelColor(3, strip.Color(255, 255, 50));
+  }
+  strip.show();
+  }
+
+void rightLight(){
+  strip.clear();
+  if(millis() >= timeNe + 150){
+    timeNe = millis() + 150;
+    
+    strip.setPixelColor(1, strip.Color(255, 255, 50));
+    strip.setPixelColor(2, strip.Color(255, 255, 50));
+  }
+  strip.show();
+  }
 
 void moveForward(int left, int right){
 
@@ -223,7 +285,6 @@ void moveBackward(int left, int right){
   
   digitalWrite(leftMotorForward, LOW);
   digitalWrite(rightMotorForward, LOW);
-  
 }
 
 void moveStop(){
@@ -376,6 +437,7 @@ void followLine(){
       delay(300);
       drive(0,0);
       delay(150);
+      rightLight();
       rotate(90);
       delay(200);
       bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
@@ -387,6 +449,7 @@ void followLine(){
       bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
       bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
+        leftLight();
         rotate(-180);  
         delay(200);
         bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
@@ -398,6 +461,7 @@ void followLine(){
         bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
         bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
         if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
+          leftLight();
           rotate(-93);
           delay(200);
         }

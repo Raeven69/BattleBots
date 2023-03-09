@@ -1,4 +1,4 @@
-#include <QTRSensors.h>
+/*#include <QTRSensors.h>
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>
@@ -130,7 +130,7 @@ void setup() {
 
   qtr.setTypeAnalog();
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-/*
+
  if (shouldCalibrate)
   {
     int i;
@@ -160,7 +160,7 @@ void setup() {
     calibratedValue = getLineSensorSensitivity();
     Serial.println(calibratedValue);
   }
-*/
+
 }
 
 
@@ -504,4 +504,4 @@ void start(){
     starting = false;
   }
   
-}
+}*/
