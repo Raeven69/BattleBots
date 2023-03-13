@@ -91,9 +91,8 @@ void detectWall() {                     // This function activates the ultra son
 }
 
 void forwardOneSquare() {               // This function makes the battlebot drive on square forward in the maze
-  while(counterLeft < 46 && counterRight < 46) {
+  while(counterLeft < 50) {
     readRotationLeft();
-    readRotationRight();
     driveForward();
   }
 }
@@ -200,7 +199,7 @@ void driveForward() {                   // This function activates both motors a
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
   left = 255;
-  right = 249;
+  right = 253;
   analogWrite(leftMotorPin1, left);
   digitalWrite(leftMotorPin2, LOW);
   analogWrite(rightMotorPin1, right);
@@ -228,28 +227,28 @@ void stop() {                          // This function deactivates both motors 
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
   delay(500);
-  while(counterRight < 15) {   
+  while(counterRight < 16) {   
     readRotationRight();
     backwardsRight();
   }
   counterRight = 0;
   brake();
-  while(counterRight < 17) {
+  while(counterRight < 15) {
     readRotationRight();
     driveForward();
   }
   counterRight = 0;
   brake();
-  while(counterLeft < 15) {
+  while(counterLeft < 16) {
     readRotationLeft();
     forwardsLeft();
   }
   counterLeft = 0;
   counterRight = 0;
   brake();
-  while(counterLeft < 15) {
+  while(counterLeft < 25) {
     readRotationLeft();
-    driveBackward();
+    driveForward();
   }
   counterLeft = 0;
 }
@@ -262,7 +261,7 @@ void turnLeft() {                       // This function will make the battlebot
   }
   brake();
   counterRight = 0;
-  while(counterRight < 17) {
+  while(counterRight < 15) {
     readRotationRight();
     driveForward();
   }
@@ -275,9 +274,9 @@ void turnLeft() {                       // This function will make the battlebot
   counterLeft = 0;
   counterRight = 0;
   brake();
-  while(counterLeft < 15) {
+  while(counterLeft < 25) {
     readRotationLeft();
-    driveBackward();
+    driveForward();
   }
   counterLeft = 0;
 }
@@ -320,20 +319,21 @@ void forwardsRight() {                  // This function will make the right whe
 
 void turnAround() {                 // This function will make the battlebot make a 180 degree turn to the left
   delay(500);
-  while(counterLeft < 18) {
+  while(counterLeft < 32) {
     readRotationLeft();
     backwardsLeft();
   }
-  delay(500);
-  while(counterRight < 18) {
+  brake();
+  while(counterRight < 32) {
     readRotationRight();
     forwardsRight();
   }
+  brake();
   counterRight = 0;
   counterLeft = 0;
-  while(counterRight < 20) {
+  while(counterRight < 13) {
     readRotationRight();
-    driveBackward();
+    driveForward();
   }
   counterRight = 0;
   counterLeft = 0;
@@ -428,7 +428,6 @@ void checkForPathLeft() {
         turnedLeft = false;
         turnedAround = false;
         brake();
-        forwardOneSquare();
         checking = false;
       }
     }
@@ -440,7 +439,6 @@ void checkForPathLeft() {
       turnedRight = false;
       turnedAround = false;
       brake();
-      forwardOneSquare();
       checking = false;
     }
   }
@@ -469,7 +467,8 @@ void checkForPathRight() {
       if(distance < 20) {                                     // If a wall is detected on the right side, position the servo to the front
         brake();
         servoFront();
-        delay(500);
+        delay(
+          500);
         detectWall(); 
         if(distance < 15) {                                   // If a wall is detected on the front side, the battlebot will turn around
           brake();
@@ -495,7 +494,6 @@ void checkForPathRight() {
         turnedRight = false;
         turnedAround = false;
         brake();
-        forwardOneSquare();
         checking = false;
       }
     }
@@ -507,7 +505,6 @@ void checkForPathRight() {
       turnedLeft = false;
       turnedAround = false;
       brake();
-      forwardOneSquare();
       checking = false;
     }
   }
@@ -557,7 +554,6 @@ void checkForPathFront() {
           turnedLeft = false;
           turnedRight = false;
           brake();
-          forwardOneSquare();
           checking = false;
         }
       }
@@ -569,7 +565,6 @@ void checkForPathFront() {
         turnedRight = false;
         turnedAround = false;
         brake();
-        forwardOneSquare();
         checking = false;
       }
     }
@@ -578,6 +573,7 @@ void checkForPathFront() {
       delay(500);
       brake();
       forwardOneSquare();
+      turnedAround = false;
       checking = false;
     }
   }
