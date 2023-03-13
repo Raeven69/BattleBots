@@ -19,40 +19,9 @@ uint16_t sensorValues[8];
 bool isOnLine;
 // Variable to store the position of the line relative to the sensors
 uint16_t position;
-
-// Function to calibrate the sensors
-void calibrateSensor()
-{
-    // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
-    openGrapper(); 
-    qtr.setTypeAnalog();
-    qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-    drive(255, 255);
-    delay(30);
-    drive(86, 72);
-    for (int i = 0; i < 150; i++)
-    {
-        qtr.calibrate();
-    }
-    drive(0, 0);
-    delay(100);
-    closeGrapper();
-    rotate(-90);
-}
-
-// Initialize the line sensor pins and start calibrating
-void initLineSensor()
-{
-    pinMode(lineSensorOuterRight, INPUT);
-    pinMode(lineSensorFarRight, INPUT);
-    pinMode(lineSensorRight, INPUT);
-    pinMode(lineSensorInnerRight, INPUT);
-    pinMode(lineSensorInnerLeft, INPUT);
-    pinMode(lineSensorLeft, INPUT);
-    pinMode(lineSensorFarLeft, INPUT);
-    pinMode(lineSensorOuterLeft, INPUT);
-    calibrateSensor();
-}
+// Calibration line counting variables
+int lineCounter = 0;
+bool wasOnLines = false;
 
 // Function for updating the sensor data and checking whether the robot is on the line or not
 void updateLineData()
@@ -84,4 +53,54 @@ bool isAllOnLine()
         }
     }
     return allSensors;
+}
+
+// Function to calibrate the sensors
+void calibrateSensor()
+{
+    // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
+    openGrapper(); 
+    qtr.setTypeAnalog();
+    qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
+    drive(255, 255);
+    delay(30);
+    drive(90, 75);
+    while (true)
+    {
+        qtr.calibrate();
+        if (wasOnLines == false && isAllOnLine() == true)
+        {
+            wasOnLines = true;
+            lineCounter++;
+        }
+        else if (wasOnLines != isAllOnLine())
+        {
+            wasOnLines = !wasOnLines;
+        }
+        if (lineCounter > 3)
+        {
+            if (!isAllOnLine())
+            {
+                break;
+            }
+        }
+    }
+    drive(0, 0);
+    delay(100);
+    closeGrapper();
+    rotate(-90);
+}
+
+// Initialize the line sensor pins and start calibrating
+void initLineSensor()
+{
+    pinMode(lineSensorOuterRight, INPUT);
+    pinMode(lineSensorFarRight, INPUT);
+    pinMode(lineSensorRight, INPUT);
+    pinMode(lineSensorInnerRight, INPUT);
+    pinMode(lineSensorInnerLeft, INPUT);
+    pinMode(lineSensorLeft, INPUT);
+    pinMode(lineSensorFarLeft, INPUT);
+    pinMode(lineSensorOuterLeft, INPUT);
+    calibrateSensor();
 }

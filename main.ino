@@ -21,6 +21,18 @@ void positionPawn()
 {
     drive(0, 0);
     delay(200);
+    while (isAllOnLine())
+    {
+        drive(-150, -150);
+    }
+    drive(0, 0);
+    delay(200);
+    while (!isAllOnLine())
+    {
+        drive(150, 150);
+    }
+    drive(0, 0);
+    delay(200);
     // Open the grapper and drive backwards for 1 second
     openGrapper();
     delay(200);
