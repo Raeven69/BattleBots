@@ -1,6 +1,10 @@
 // Include the library for controlling the NeoPixel leds
 #include "lib/Adafruit_NeoPixel.hpp"
 
+/************************************
+***           Neo Pixels          ***
+************************************/
+
 // Define variables for the NeoPixel pin, amount of leds and the neoLed object
 int neoLedPin = 9;
 int neoLedCount = 4;

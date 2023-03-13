@@ -1,3 +1,7 @@
+/************************************
+***            Grapper            ***
+************************************/
+
 // Include the servo library for controlling servo motors
 #include "lib/Servo.hpp"
 

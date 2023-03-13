@@ -1,4 +1,8 @@
-// Include code for controlling the NeoPixel leds
+/************************************
+***            Engine             ***
+************************************/
+
+// Inclde code for controlling the NeoPixel leds
 #include "neo.hpp"
 
 // I/O pins for the engine

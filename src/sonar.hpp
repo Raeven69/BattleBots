@@ -1,3 +1,7 @@
+/************************************
+***         Sonar sensor          ***
+************************************/
+
 // Sonar pins
 const int echoPin = 4;
 const int triggerPin = 7;

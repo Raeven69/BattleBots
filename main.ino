@@ -1,3 +1,10 @@
+/************************************
+***           INF1A               ***
+***         13-3-2023             ***  
+***          BeunBot              *** 
+***         Versie 1.0            ***
+************************************/
+
 // Import the code for different arduino modules
 #include "src/engine.hpp"
 #include "src/sonar.hpp"

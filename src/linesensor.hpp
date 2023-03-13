@@ -1,3 +1,7 @@
+/************************************
+***         Line sensor           ***
+************************************/
+
 // Include the QTRSensors library for calibrating the sensors
 #include "lib/QTRSensors.hpp"
 
