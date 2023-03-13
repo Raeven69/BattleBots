@@ -1,22 +1,31 @@
+/************************************
+***     INF1A Bot Eugene Krabs    ***
+***            13-3-2023          ***
+***            Versie 0.8         ***
+************************************/
+
 #include <QTRSensors.h>
 #include <SoftwareSerial.h>
-#include <Adafruit_NeoPixel.h>
-#define bluetoothRX 2
-#define bluetoothTX 8 // 8
-SoftwareSerial mySerial(bluetoothRX, bluetoothTX);
+#include <Adafruit_NeoPixel.h>      // Library used to control the NeoPixels
+#define bluetoothRX 2               // Define bluetoothRX pin 2
+#define bluetoothTX 8               // Define bluetoothTX pin 8
+SoftwareSerial mySerial(bluetoothRX, bluetoothTX);      
 
-const int gripperPin = 10; // 10
+const int gripperPin = 10;          // Set gripperPin to pin 10
 
 QTRSensors qtr;
 
+// const int motorpins:
 const int leftMotorForward = 5; //5
 const int leftMotorBackward = 6; //6
 const int rightMotorForward = 3; //9
 const int rightMotorBackward = 11; //10
 
+// const int rotationpins:
 const int leftRotationPin = 7;
 const int rightRotationPin = 4;
 
+// const int LineSenorpins:
 const int lineSensorOuterRight = A0;
 const int lineSensorFarRight = A1;
 const int lineSensorRight = A2;
@@ -26,10 +35,11 @@ const int lineSensorLeft = A5;
 const int lineSensorFarLeft= A6;
 const int lineSensorOuterLeft = A7;
 
-const int ledPin = 12; //NI <- Neopixel
-const int ledCount = 4; //Amount Neopixels
+const int ledPin = 12;            // set Neopixel pin to 12
+const int ledCount = 4;           // Amount of Neopixels
 Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);
 
+// Set varibials
 bool goesForward = false;
 bool isDriving = false;
 
@@ -57,7 +67,7 @@ bool onceTurnLeft = false;
 
 int period = 1900;
 unsigned long time_now = 0;
-unsigned long timeNe = 0; // Start value for millis Neopixel
+unsigned long timeNe = 0;     // Start value for millis Neopixel
 
 int rotationState;
 int rotationLastState;
@@ -77,25 +87,24 @@ bool calibrating = true;
 bool gripperClosed = false;
 
 // Sensor Calibration
-const int calibrationTime = 40; // in milliseconds * 20 (50 = 1 second)
-const bool shouldCalibrate = true;
+const int calibrationTime = 40;          // in milliseconds * 20 (50 = 1 second)
+const bool shouldCalibrate = true;       // Start calibrate
 
 bool starting = true;
 
-int getLineSensorSensitivity(int margin = 100)
-{
+int getLineSensorSensitivity(int margin = 100){    // Get Sensitivity from lineSensor
     int totalSize = 0;
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 8; i++){
         totalSize += qtr.calibrationOn.maximum[i];
     }
     return (int)(totalSize / 8 - margin);
 }
 
 
-void setup() {
+void setup(){
   // put your setup code here, to run once:
-  
+
+  // Set lineSensor to INPUT
   pinMode(lineSensorOuterRight, INPUT);
   pinMode(lineSensorFarRight, INPUT);
   pinMode(lineSensorRight, INPUT);
@@ -105,11 +114,13 @@ void setup() {
   pinMode(lineSensorFarLeft, INPUT);
   pinMode(lineSensorOuterLeft, INPUT);
 
+  // Set motor to OUTPUT
   pinMode(leftMotorForward, OUTPUT);
   pinMode(leftMotorBackward, OUTPUT);
   pinMode(rightMotorForward, OUTPUT);
   pinMode(rightMotorBackward, OUTPUT);
 
+  // Set gripperPin to OUTPUT
   pinMode(gripperPin, OUTPUT);
 
 //===[Neopixels]========================================================
@@ -119,60 +130,24 @@ void setup() {
     strip.begin();                   // INITIALIZE NeoPixel strip object
     strip.show();                    // Turn OFF all pixels
     strip.setBrightness(100);        // Set BRIGHTNESS
-    
-  pinMode(ledPin, OUTPUT);
-  pinMode(leftMotorForward, OUTPUT);
-  pinMode(rightMotorForward, OUTPUT);
-  pinMode(leftMotorBackward, OUTPUT);
-  pinMode(rightMotorBackward, OUTPUT);
-  Serial.begin(9600);
-  while (!Serial) {
+
+  pinMode(ledPin, OUTPUT);           // Set ledPin to OUTPUT
+  Serial.begin(9600);                // Begin Serial
+  while (!Serial){                  // Wait till serial started
     ;
   }
 
   // Open serial communication for the Bluetooth Serial Port
   mySerial.begin(9600);
 
-  qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-/*
- if (shouldCalibrate)
-  {
-    int i;
-    Serial.println("");
-    Serial.print("Calibrating");
-    for (i = 0; i < calibrationTime; i++)
-    {
-      //drive(140,140);
-      if (i % 10 == 0)
-      {
-        (i % 20 == 0) ? drive(-140,140) : drive(140,-140);
-      }
-      else if (i % 15 == 0)
-      {
-        (i % 30 == 0) ? drive(-140,140) : drive(140,-140); 
-      }
-      if ((i % 100 == 0 || i == 150) && i > 0)
-      {
-        Serial.print(".");
-      }
-      qtr.calibrate();
-      delay(20);
-    }
-    Serial.println("");
-    Serial.println("Calibration complete");
-    drive(0,0);
-    calibratedValue = getLineSensorSensitivity();
-    Serial.println(calibratedValue);
-  }
-*/
+  qtr.setTypeAnalog();               // Initialize linesSensor
+  qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);  // Initialize linesSensor
 }
 
-
-
-void loop() {
+void loop(){
   // put your main code here, to run repeatedly:
-  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+  // Read lineSensor:
+  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;   
   bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
   bool right = analogRead(lineSensorRight) > calibratedValue;
   bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
@@ -181,47 +156,46 @@ void loop() {
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   
-  if (starting == true){
-    openGripper();
-    start();
+  if (starting == true){            // Start procedure
+    openGripper();                  // Open Gripper
+    start();                        
   }
   else if(endReached == false && isTurnRight == false && isTurnLeft == false && rotating == false && starting == false){
-    forwardLight();
-    followLine();
+    forwardLight();                 // Turn on headlights
+    followLine();                   // FollowLine
   }
   else if (rotating == true && starting == false && endReached == false){
-    rotateLight();
-    rotate(180);
-    rotating = false;
+    rotateLight();                  // Turnsignal
+    rotate(180);                    // Rotate 180 degrees
+    rotating = false;               // Stop rotating
   }
   else if (isTurnRight == true && onceTurnRight == false && starting == false && endReached == false){
-    rightLight();
-    moveForward(170,0);
-    delay(400);
-    moveStop();
-    onceTurnRight = true;
+    rightLight();                   // Turnsignal
+    moveForward(170,0);             // Turn right
+    delay(400);                     // Delay
+    moveStop();                     // Stop turning
+    onceTurnRight = true;           // It Moved away from the line
     mySerial.println("onceTurnRight = true");
   }
   else if (isTurnRight == true && onceTurnRight == true && starting == false && endReached == false){
-    rightLight();
-    turnRight();
+    rightLight();                   // Turn signal
+    turnRight();                    // Turn right
     mySerial.println("turnRight");
   }
   else if (isTurnLeft == true && onceTurnLeft == false && starting == false && endReached == false){
-    moveForward(0,150);
-    delay(400);
-    moveStop();
-    onceTurnLeft = true;
+    moveForward(0,150);             // Turn left
+    delay(400);                     // Delay
+    moveStop();                     // Stop turning
+    onceTurnLeft = true;            // It Moved away from the line
     mySerial.println("onceTurnLeft = true");
   }
   else if (isTurnLeft == true && onceTurnLeft == true && starting == false && endReached == false){
     mySerial.println("Turning left");
-    turnLeft();
+    turnLeft();                     // Turn left
   }
   else{
-    moveStop();
+    moveStop();                     // Stop at the end
   }
-
 }
 
 void forwardLight(){
@@ -259,7 +233,7 @@ void rightLight(){
     
     strip.setPixelColor(1, strip.Color(255, 255, 50));
     strip.setPixelColor(2, strip.Color(255, 255, 50));
-  }
+    }
   strip.show();
   }
 
@@ -275,7 +249,7 @@ void moveForward(int left, int right){
   digitalWrite(rightMotorBackward, LOW); 
 }
 
-void moveBackward(int left, int right){
+void moveBackward(int left, int right){    
 
   goesForward = false;
   isDriving = true;
@@ -311,9 +285,9 @@ void turnRight(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(170,0);
   }
-  if (innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){
-    moveStop();
-    isTurnRight = false;
+  if (innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){    // if line is in the middle
+    moveStop();               // Stop
+    isTurnRight = false;      // Stop turning
     onceTurnRight = false;
   }
 }
@@ -331,9 +305,9 @@ void turnLeft(){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(0,170);
   }
-  if (innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){
-    moveStop();
-    isTurnLeft = false;
+  if (innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){    // if line is in the middle
+    moveStop();             // Stop
+    isTurnLeft = false;     // Stop turning
     onceTurnLeft = false;
   }
 }
@@ -356,8 +330,8 @@ void followLine(){
     }
   }
   if(right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1){
-    drive(0,0);
-    delay(100);
+    drive(0,0);     // Stop
+    delay(100);     // Delay
     drive(150,135);
     delay(200);
     drive(0,0);
@@ -369,64 +343,77 @@ void followLine(){
     bool left = analogRead(lineSensorLeft) > calibratedValue;
     bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
     bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+
+    // Check if it stil sees all black
     if((right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (outerRight == 1 && farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1)){
-       drive(-170, -150);
-       delay(380);
-       drive(0,0);
-       openGripper();
-       delay(800); 
-       drive(-170, -150);
-       delay(800);
-       endReached = true;
+       drive(-170, -150);   // Drive backwards to position cone
+       delay(380);          // Delay
+       drive(0,0);          // Stop
+       openGripper();       // Open gripper
+       delay(800);          // Delay
+       drive(-170, -150);   // Drive away
+       delay(800);          // Delay
+       endReached = true;   // Reached the end
     }
   }
+  // If detecting a path to the right
   else if (((outerRight == 1 && farLeft == 0) && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1 && farLeft == 0 && outerLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && innerLeft == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (farRight == 1 && outerRight == 1 && farLeft == 0) || (outerRight == 1 && (innerRight == 1 || innerLeft == 1 || left == 1)  && farLeft == 0)) {
     mySerial.println("Bocht naar rechts");
-    moveStop();
-    isTurnRight = true;
+    moveStop();           // Stop
+    isTurnRight = true;   // Turn right
   }
+  // If line is centered
   else if (innerLeft == 1 && innerRight == 1){
     moveForward(200,190);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is slightly centered
   else if (innerLeft == 1 && innerRight == 0){
     moveForward(180,200);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is slightly centered
   else if (innerLeft == 0 && innerRight == 1){
     moveForward(200,165);
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is slightly to the left
   else if (left == 1){
     moveForward(150,200);
     mySerial.println("Iets naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is slightly to the right
   else if (right == 1){
     moveForward(210,130);
     mySerial.println("Iets naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is to the left
   else if (farLeft == 1){
     moveForward(0,180);
     mySerial.println("Naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is to the right
   else if (farRight == 1){
     moveForward(180,0);
     mySerial.println("Naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is far to the right
   else if (outerRight == 1){
     moveForward(180,0);
     mySerial.println("Naar rechts");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If line is far to the left
   else if (outerLeft == 1){
     moveForward(0,180);
     mySerial.println("Naar links");
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
+  // If the BattleBot lost the line
   else{
     mySerial.println("Ik zie niks meer");
     if (endReached == true){
@@ -438,7 +425,7 @@ void followLine(){
       drive(0,0);
       delay(150);
       rightLight();
-      rotate(90);
+      rotate(90);         // Turn right
       delay(200);
       bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
       bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
@@ -450,7 +437,7 @@ void followLine(){
       bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
         leftLight();
-        rotate(-180);  
+        rotate(-180);     // Turn far left
         delay(200);
         bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
         bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
@@ -462,7 +449,7 @@ void followLine(){
         bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
         if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
           leftLight();
-          rotate(-93);
+          rotate(-93);    // Turn to the left to drive back
           delay(200);
         }
         else{
@@ -476,7 +463,7 @@ void followLine(){
   }
 }
 
-void rotate(int rotation) {
+void rotate(int rotation){
     int counter = 0;
     while (counter < (int)((135.0/360.0) * abs(rotation))) { // 135.0 / 360.0
         if (rotation > 0) {
@@ -496,7 +483,7 @@ void rotate(int rotation) {
 }
 
 
-void drive(int left, int right) {
+void drive(int left, int right){
     if (left < 0) {
         analogWrite(leftMotorForward, 0);
         analogWrite(leftMotorBackward, abs(left));
@@ -531,7 +518,7 @@ void start(){
     calibratedValue = getLineSensorSensitivity();
     Serial.println(calibratedValue);
   }
-  if(outerLeft == 0 && farLeft == 0 && left == 0 && innerLeft == 0 && innerRight == 0 && right == 0 && farRight == 0 && outerRight == 0){ // Einde zwarte vlak is bereikt
+  if(outerLeft == 0 && farLeft == 0 && left == 0 && innerLeft == 0 && innerRight == 0 && right == 0 && farRight == 0 && outerRight == 0){     // End of the black surface is reached
     delay(50);
     drive(0,0);
     closeGripper();
@@ -543,10 +530,10 @@ void start(){
   
 }
 
-void openGripper() {
+void openGripper(){
   analogWrite(gripperPin, 203);
 }
 
-void closeGripper() {
+void closeGripper(){
   analogWrite(gripperPin, 165);
 }
