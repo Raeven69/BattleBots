@@ -144,6 +144,7 @@ void setup(){
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);  // Initialize linesSensor
 }
 
+
 void loop(){
   // put your main code here, to run repeatedly:
   // Read lineSensor:
@@ -203,7 +204,7 @@ void forwardLight(){
   strip.setPixelColor(2, strip.Color(255, 255, 255));
   strip.setPixelColor(3, strip.Color(255, 255, 255));  
   strip.show();
-  }
+}
   
 void rotateLight(){
   strip.clear();
@@ -212,7 +213,7 @@ void rotateLight(){
   strip.setPixelColor(2, strip.Color(0, 255, 0));
   strip.setPixelColor(3, strip.Color(0, 255, 0));
   strip.show();
-  }
+}
 
 void leftLight(){
   strip.clear();
@@ -224,7 +225,7 @@ void leftLight(){
     strip.setPixelColor(3, strip.Color(255, 255, 50));
   }
   strip.show();
-  }
+}
 
 void rightLight(){
   strip.clear();
@@ -235,7 +236,7 @@ void rightLight(){
     strip.setPixelColor(2, strip.Color(255, 255, 50));
     }
   strip.show();
-  }
+}
 
 void moveForward(int left, int right){
 
@@ -465,10 +466,11 @@ void followLine(){
 
 void rotate(int rotation){
     int counter = 0;
-    while (counter < (int)((135.0/360.0) * abs(rotation))) { // 135.0 / 360.0
-        if (rotation > 0) {
+    while(counter < (int)((135.0/360.0) * abs(rotation))){ // 135.0 / 360.0
+        if(rotation > 0){
             drive(160, -160);
-        } else {
+        }
+        else{
             drive(-160, 160);
         }
         leftRotationState = digitalRead(leftRotationPin);
@@ -483,18 +485,21 @@ void rotate(int rotation){
 }
 
 
+
 void drive(int left, int right){
-    if (left < 0) {
+    if(left < 0){
         analogWrite(leftMotorForward, 0);
         analogWrite(leftMotorBackward, abs(left));
-    } else {
+    } 
+    else{
         analogWrite(leftMotorForward, left);
         analogWrite(leftMotorBackward, 0);
     }
-    if (right < 0) {
+    if(right < 0){
         analogWrite(rightMotorForward, 0);
         analogWrite(rightMotorBackward, abs(right));
-    } else {
+    } 
+    else{
         analogWrite(rightMotorForward, right);
         analogWrite(rightMotorBackward, 0);
     }
@@ -502,7 +507,7 @@ void drive(int left, int right){
 }
 
 void start(){
-  if (shouldCalibrate)
+  if(shouldCalibrate)
   {
     int i;
     for (i = 0; i < calibrationTime; i++)
@@ -527,7 +532,6 @@ void start(){
     drive(155,130);
     starting = false;
   }
-  
 }
 
 void openGripper(){
