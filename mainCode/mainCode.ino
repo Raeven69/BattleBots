@@ -36,6 +36,7 @@ boolean checking = false;
 boolean turnedLeft = false;
 boolean turnedRight = false;
 boolean turnedAround = false;
+boolean started = false;
 
 
 
@@ -60,18 +61,10 @@ void setup() {
 
 //Loop
 void loop() {
-  if(turnedLeft == true) {
-    checkForPathRight();
+  if(started == false) {
+    startPosition();
   }
-  if(turnedRight == true) {
-    checkForPathLeft();
-  }
-  if(turnedAround == true) {
-    checkForPathFront();
-  }
-  if(turnedLeft == false && turnedRight == false && turnedAround == false) {
-    checkForPathLeft();
-  }
+  hugRightWall();
 }
 
 
@@ -91,9 +84,17 @@ void detectWall() {                     // This function activates the ultra son
 }
 
 void forwardOneSquare() {               // This function makes the battlebot drive on square forward in the maze
-  while(counterLeft < 50) {
+  while(counterLeft < 48) {
     readRotationLeft();
     driveForward();
+  }
+}
+
+void startPosition() {                  // This function makes the battlebot drive drive to the right position in the square
+  while(counterLeft < 20) {
+    readRotationLeft();
+    driveForward();
+    started = true;
   }
 }
 
@@ -189,7 +190,7 @@ void calibrateRight() {                           // This function makes the bat
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-  left = 251;
+  left = 255;
   right = 255;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -213,7 +214,7 @@ void brake() {                          // This function deactivates both motors
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, LOW);
   digitalWrite(rightMotorPin1, LOW);
-  delay(500); 
+  delay(200); 
 }
 
 void stop() {                          // This function deactivates both motors and will make the battlebot stop driving
@@ -227,19 +228,19 @@ void stop() {                          // This function deactivates both motors 
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
   delay(500);
-  while(counterRight < 16) {   
+  while(counterRight < 15) {   
     readRotationRight();
     backwardsRight();
   }
   counterRight = 0;
   brake();
-  while(counterRight < 15) {
+  while(counterRight < 17) {
     readRotationRight();
     driveForward();
   }
   counterRight = 0;
   brake();
-  while(counterLeft < 16) {
+  while(counterLeft < 15) {
     readRotationLeft();
     forwardsLeft();
   }
@@ -255,19 +256,19 @@ void turnRight() {                      // This function will make the battlebot
 
 void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
   delay(500);
-  while(counterLeft < 15) {
+  while(counterLeft < 16) {
     readRotationLeft();
     backwardsLeft();
   }
   brake();
   counterRight = 0;
-  while(counterRight < 15) {
+  while(counterRight < 17) {
     readRotationRight();
     driveForward();
   }
   brake();
   counterRight = 0;
-  while(counterRight < 15) {
+  while(counterRight < 16) {
     readRotationRight();
     forwardsRight();
   }
@@ -447,63 +448,52 @@ void checkForPathLeft() {
   }
 }
 
-void checkForPathRight() {
+void hugRightWall() {
   if(checking == false) {                                     // Check if the function is already running
-    //brake();
-    //calibrate();                                              // If necessary, calibrate
-    //brake();
     counterLeft = 0;                                          // Reset the left pulse count
     counterRight = 0;                                         // Reset the right pulse count
     checking = true;                                          
     brake();    
     servoRight();                                              // Position the servo to look to the left
-    delay(500);
+    delay(300);
     detectWall();                                             // Activates the ultra sonic distance sensor and checks if there is a wall
     if(distance < 20) {                                       // If a wall is detected on the left side, position the servo to look to the right
       brake();
-      servoLeft();
-      delay(500);
+      servoFront();
+      delay(300);
       detectWall();
-      if(distance < 20) {                                     // If a wall is detected on the right side, position the servo to the front
+      if(distance < 15) {                                     // If a wall is detected on the right side, position the servo to the front
         brake();
-        servoFront();
-        delay(
-          500);
+        servoLeft();
+        delay(300);
         detectWall(); 
-        if(distance < 15) {                                   // If a wall is detected on the front side, the battlebot will turn around
+        if(distance < 20) {                                   // If a wall is detected on the front side, the battlebot will turn around
           brake();
+          servoFront();
           counterLeft = 0;
           counterRight = 0;
           turnAround();
-          turnedAround = true;
-          turnedRight = false;
-          turnedLeft = false;
           brake();
           checking = false;
         }
         else {                                                // If no path is detected on the sides, drive one square forward
-          forwardOneSquare();
+          servoFront();
+          turnLeft();
           checking = false;
         }
       }
       else {                                                 // If a path is detected on the right side, turn to the right
         servoFront();
-        delay(500);
-        turnLeft();
-        turnedLeft = true;
-        turnedRight = false;
-        turnedAround = false;
+        delay(300);
+        forwardOneSquare();
         brake();
         checking = false;
       }
     }
     else {                                                  // If a path is detected on the left side, turn to the left
       servoFront();
-      delay(500);
+      delay(300);
       turnRight();
-      turnedRight = true;
-      turnedLeft = false;
-      turnedAround = false;
       brake();
       checking = false;
     }
