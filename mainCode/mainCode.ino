@@ -84,14 +84,14 @@ void detectWall() {                     // This function activates the ultra son
 }
 
 void forwardOneSquare() {               // This function makes the battlebot drive on square forward in the maze
-  while(counterLeft < 48) {
+  while(counterLeft < 49) {
     readRotationLeft();
     driveForward();
   }
 }
 
 void startPosition() {                  // This function makes the battlebot drive drive to the right position in the square
-  while(counterLeft < 20) {
+  while(counterLeft < 19) {
     readRotationLeft();
     driveForward();
     started = true;
@@ -108,15 +108,15 @@ void backwardOneSquare() {              // This function makes the battlebot dri
 
 void calibrate() {                            // Check if the bot is in the middle of the path
   servoLeft();                                // Position the servo to the left side
-  delay(500);                                 
+  delay(300);                                 
   detectWall();                               // Activate the ultra sonic distance sensor
   if(distance > 12 && distance < 25) {        // Check left, if between 12 and 25cm, calibrate to the left
     calibrateLeft();                        
     servoFront();
   }
-  delay(500);
+  delay(300);
   servoRight();
-  delay(500);
+  delay(300);
   detectWall();
   if(distance > 12 && distance < 25) {         // Check right, if between 12 and 25 cm, calibrate to the right
     calibrateRight();
@@ -126,7 +126,7 @@ void calibrate() {                            // Check if the bot is in the midd
 }
 
 void calibrateLeft() {                        // This function makes the battle bot calibrate to the left
-  delay(500);
+  brake();
   while(counterLeft < 5) {
     readRotationLeft();
     backwardsLeft();
@@ -158,7 +158,7 @@ void calibrateLeft() {                        // This function makes the battle 
 }
 
 void calibrateRight() {                           // This function makes the battlebot calibrate to the right
-  delay(500);
+  brake();
   while(counterRight < 5) {
     readRotationRight();
     backwardsRight();
@@ -190,7 +190,7 @@ void calibrateRight() {                           // This function makes the bat
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-  left = 255;
+  left = 253;
   right = 255;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -228,26 +228,26 @@ void stop() {                          // This function deactivates both motors 
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
   delay(500);
-  while(counterRight < 15) {   
+  while(counterRight < 17) {   
     readRotationRight();
     backwardsRight();
   }
   counterRight = 0;
   brake();
-  while(counterRight < 17) {
+  while(counterRight < 16) {
     readRotationRight();
     driveForward();
   }
   counterRight = 0;
   brake();
-  while(counterLeft < 15) {
+  while(counterLeft < 16) {
     readRotationLeft();
     forwardsLeft();
   }
   counterLeft = 0;
   counterRight = 0;
   brake();
-  while(counterLeft < 25) {
+  while(counterLeft < 22) {
     readRotationLeft();
     driveForward();
   }
@@ -256,13 +256,13 @@ void turnRight() {                      // This function will make the battlebot
 
 void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
   delay(500);
-  while(counterLeft < 16) {
+  while(counterLeft < 17) {
     readRotationLeft();
     backwardsLeft();
   }
   brake();
   counterRight = 0;
-  while(counterRight < 17) {
+  while(counterRight < 16) {
     readRotationRight();
     driveForward();
   }
@@ -275,7 +275,7 @@ void turnLeft() {                       // This function will make the battlebot
   counterLeft = 0;
   counterRight = 0;
   brake();
-  while(counterLeft < 25) {
+  while(counterLeft < 22) {
     readRotationLeft();
     driveForward();
   }
@@ -283,8 +283,8 @@ void turnLeft() {                       // This function will make the battlebot
 }
 
 void backwardsLeft() {                 // This function will make the left wheel turn backward
-  left = 255;
-  right = 255;
+  left = 215;
+  right = 215;
   digitalWrite(leftMotorPin2, LOW);
   analogWrite(leftMotorPin1, left);
   digitalWrite(rightMotorPin2, LOW);
@@ -292,8 +292,8 @@ void backwardsLeft() {                 // This function will make the left wheel
 }
 
 void forwardsLeft() {                   // This function will make the left wheel turn forward
-  left = 255;
-  right = 255;
+  left = 215;
+  right = 215;
   analogWrite(leftMotorPin2, right);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin2, LOW);
@@ -301,8 +301,8 @@ void forwardsLeft() {                   // This function will make the left whee
 }
 
 void backwardsRight() {                 // This function will make the right wheel turn backward
-  left = 255;
-  right = 255;
+  left = 215;
+  right = 215;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin1, right);
@@ -310,8 +310,8 @@ void backwardsRight() {                 // This function will make the right whe
 }
 
 void forwardsRight() {                  // This function will make the right wheel turn forward
-  left = 255;
-  right = 255;
+  left = 215;
+  right = 215;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin1, LOW);
@@ -325,7 +325,7 @@ void turnAround() {                 // This function will make the battlebot mak
     backwardsLeft();
   }
   brake();
-  while(counterRight < 32) {
+  while(counterRight < 34) {
     readRotationRight();
     forwardsRight();
   }
@@ -346,6 +346,7 @@ void readRotationRight() {              // This function will read the pulses of
       counterRight++;   
   }
   rotationLastStateRight = rotationStateRight;
+  Serial.println(counterRight);
 }
 
 void readRotationLeft() {               // This function will read the pulses of the left rotation sensor
@@ -354,6 +355,7 @@ void readRotationLeft() {               // This function will read the pulses of
       counterLeft++;   
   }
   rotationLastStateLeft = rotationStateLeft;
+  Serial.println(counterLeft);
 }
 
 void servoLeft() {                   // This function will make the servo turn to the left 
