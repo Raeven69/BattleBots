@@ -227,27 +227,26 @@ void stop() {                          // This function deactivates both motors 
 }
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
-  delay(500);
-  while(counterRight < 17) {   
-    readRotationRight();
-    backwardsRight();
-  }
-  counterRight = 0;
   brake();
-  while(counterRight < 16) {
-    readRotationRight();
-    driveForward();
+  counterLeft = 0;
+  while(counterLeft < 2){
+    readRotationLeft();
+    left = 255;
+    right = 255;
+    analogWrite(leftMotorPin2, right);
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(rightMotorPin2, LOW);
+    digitalWrite(rightMotorPin1, LOW);
   }
-  counterRight = 0;
-  brake();
-  while(counterLeft < 16) {
+  counterLeft = 0;
+  while(counterLeft < 32) {
     readRotationLeft();
     forwardsLeft();
   }
   counterLeft = 0;
   counterRight = 0;
   brake();
-  while(counterLeft < 22) {
+  while(counterLeft < 28) {
     readRotationLeft();
     driveForward();
   }
@@ -255,27 +254,26 @@ void turnRight() {                      // This function will make the battlebot
 }
 
 void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
-  delay(500);
-  while(counterLeft < 17) {
-    readRotationLeft();
-    backwardsLeft();
-  }
   brake();
   counterRight = 0;
-  while(counterRight < 16) {
+  while(counterRight < 2){
     readRotationRight();
-    driveForward();
+    left = 255;
+    right = 255;
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    analogWrite(rightMotorPin2, right);
   }
-  brake();
   counterRight = 0;
-  while(counterRight < 16) {
+  while(counterRight < 32) {
     readRotationRight();
     forwardsRight();
   }
   counterLeft = 0;
   counterRight = 0;
   brake();
-  while(counterLeft < 22) {
+  while(counterLeft < 28) {
     readRotationLeft();
     driveForward();
   }
@@ -283,8 +281,8 @@ void turnLeft() {                       // This function will make the battlebot
 }
 
 void backwardsLeft() {                 // This function will make the left wheel turn backward
-  left = 215;
-  right = 215;
+  left = 200;
+  right = 200;
   digitalWrite(leftMotorPin2, LOW);
   analogWrite(leftMotorPin1, left);
   digitalWrite(rightMotorPin2, LOW);
@@ -292,8 +290,8 @@ void backwardsLeft() {                 // This function will make the left wheel
 }
 
 void forwardsLeft() {                   // This function will make the left wheel turn forward
-  left = 215;
-  right = 215;
+  left = 200;
+  right = 200;
   analogWrite(leftMotorPin2, right);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin2, LOW);
@@ -301,8 +299,8 @@ void forwardsLeft() {                   // This function will make the left whee
 }
 
 void backwardsRight() {                 // This function will make the right wheel turn backward
-  left = 215;
-  right = 215;
+  left = 200;
+  right = 200;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin1, right);
@@ -310,8 +308,8 @@ void backwardsRight() {                 // This function will make the right whe
 }
 
 void forwardsRight() {                  // This function will make the right wheel turn forward
-  left = 215;
-  right = 215;
+  left = 200;
+  right = 200;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin1, LOW);
@@ -320,7 +318,7 @@ void forwardsRight() {                  // This function will make the right whe
 
 void turnAround() {                 // This function will make the battlebot make a 180 degree turn to the left
   delay(500);
-  while(counterLeft < 32) {
+  while(counterLeft < 33) {
     readRotationLeft();
     backwardsLeft();
   }
@@ -332,7 +330,7 @@ void turnAround() {                 // This function will make the battlebot mak
   brake();
   counterRight = 0;
   counterLeft = 0;
-  while(counterRight < 13) {
+  while(counterRight < 10) {
     readRotationRight();
     driveForward();
   }
