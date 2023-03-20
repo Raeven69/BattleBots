@@ -31,3 +31,8 @@ void closeGrapper()
     grapper.write(45);
     grapperClosed = true;
 }
+
+void detachGrapper()
+{
+    grapper.detach();
+}

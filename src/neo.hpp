@@ -6,7 +6,7 @@
 ************************************/
 
 // Define variables for the NeoPixel pin, amount of leds and the neoLed object
-int neoLedPin = 9;
+int neoLedPin = 13;
 int neoLedCount = 4;
 Adafruit_NeoPixel neoLed(neoLedCount, neoLedPin, NEO_RGB + NEO_KHZ800);
 

@@ -24,8 +24,9 @@ bool isOnLine;
 // Variable to store the position of the line relative to the sensors
 uint16_t position;
 // Calibration line counting variables
-int lineCounter = 0;
 bool wasOnLines = false;
+// Variable for keeping the last time the robot was on a black line
+long lastAllLines = 0;
 
 // Function for updating the sensor data and checking whether the robot is on the line or not
 void updateLineData()
@@ -68,25 +69,35 @@ void calibrateSensor()
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
     drive(255, 255);
     delay(30);
-    drive(90, 75);
+    drive(90, 76);
     while (true)
     {
         qtr.calibrate();
-        if (wasOnLines == false && isAllOnLine() == true)
+        if (isAllOnLine())
         {
-            wasOnLines = true;
-            lineCounter++;
-        }
-        else if (wasOnLines != isAllOnLine())
-        {
-            wasOnLines = !wasOnLines;
-        }
-        if (lineCounter > 3)
-        {
-            if (!isAllOnLine())
+            if (wasOnLines && lastAllLines > millis() - 2250)
             {
+                while (true)
+                {
+                    qtr.calibrate();
+                    if (!isAllOnLine())
+                    {
+                        delay(250);
+                        break;
+                    }
+                }
                 break;
             }
+            else
+            {
+                wasOnLines = true;
+                lastAllLines = millis();
+            }
+        }
+        else
+        {
+            wasOnLines = false;
+            lastAllLines = 0;
         }
     }
     drive(0, 0);
