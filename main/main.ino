@@ -91,8 +91,10 @@ bool calibrating = true;
 
 bool gripperClosed = false;
 
+bool moving = false;
+
 //===[Sensor Calibration]===================================
-const int calibrationTime = 40;                           // in milliseconds * 20 (50 = 1 second)
+const int calibrationTime = 35;                           // in milliseconds * 20 (50 = 1 second)
 const bool shouldCalibrate = true;                        // Start calibrate
 
 bool starting = true;
@@ -196,8 +198,8 @@ void loop(){
     mySerial.println("turnRight");
   }
   else if(isTurnLeft == true && onceTurnLeft == false && starting == false && endReached == false){
-    moveForward(0,150);                                   // Turn left
-    delay(400);                                           // Delay
+    moveForward(0,170);                                   // Turn left
+    delay(350);                                           // Delay
     moveStop();                                           // Stop turning
     onceTurnLeft = true;                                  // It Moved away from the line
     mySerial.println("onceTurnLeft = true");
@@ -284,6 +286,7 @@ void moveStop(){
 
   isDriving = false;
   goesForward = false;
+  moving = false;
   
   digitalWrite(rightMotorForward, LOW);
   digitalWrite(leftMotorForward, LOW);
@@ -302,7 +305,7 @@ void turnRight(){
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-    moveForward(170,0);
+    moveForward(180,0);
   }
   if(innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){    
                                                           // if line is in the middle
@@ -323,7 +326,7 @@ void turnLeft(){
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-    moveForward(0,170);
+    moveForward(0,180);
   }
   if(innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){    
                                                            // if line is in the middle
@@ -371,7 +374,7 @@ void followLine(){
        delay(380);                                       // Delay
        drive(0,0);                                       // Stop
        openGripper();                                    // Open gripper
-       delay(800);                                       // Delay
+       delay(350);                                       // Delay
        drive(-170, -150);                                // Drive away
        delay(800);                                       // Delay
        endReached = true;                                // Reached the end
@@ -446,8 +449,8 @@ void followLine(){
       drive(0,0);
       delay(150);
       rightLight();
-      rotate(90);                                        // Turn right
-      delay(200);
+      rotate(92);                                        // Turn right
+      delay(160);
       bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
       bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
       bool right = analogRead(lineSensorRight) > calibratedValue;
@@ -458,8 +461,8 @@ void followLine(){
       bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
         leftLight();
-        rotate(-180);                                    // Turn far left
-        delay(200);
+        rotate(-195);                                    // Turn far left
+        delay(160);
         bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
         bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
         bool right = analogRead(lineSensorRight) > calibratedValue;
@@ -470,8 +473,8 @@ void followLine(){
         bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
         if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
           leftLight();
-          rotate(-93);                                   // Turn to the left to drive back
-          delay(200);
+          rotate(-92);                                   // Turn to the left to drive back
+          delay(100);
         }
         else{
           return;
@@ -489,10 +492,10 @@ void rotate(int rotation){
     while(counter < (int)((135.0/360.0) * abs(rotation))){ 
                                                           // 135.0 / 360.0
         if(rotation > 0){
-            drive(160, -160);
+            drive(170, -170);
         }
         else{
-            drive(-160, 160);
+            drive(-170, 170);
         }
         leftRotationState = digitalRead(leftRotationPin);
         rightRotationState = digitalRead(rightRotationPin);
@@ -506,23 +509,32 @@ void rotate(int rotation){
 }
 
 void drive(int left, int right){
-    if(left < 0){
-        analogWrite(leftMotorForward, 0);
-        analogWrite(leftMotorBackward, abs(left));
-    } 
-    else{
-        analogWrite(leftMotorForward, left);
-        analogWrite(leftMotorBackward, 0);
-    }
-    if(right < 0){
-        analogWrite(rightMotorForward, 0);
-        analogWrite(rightMotorBackward, abs(right));
-    } 
-    else{
-        analogWrite(rightMotorForward, right);
-        analogWrite(rightMotorBackward, 0);
-    }
-    isDriving = abs(left) + abs(right) > 0;
+  if(moving == false && left < 150 && left > 0 && right < 150 && right > 0){
+    analogWrite(rightMotorForward, 155);
+    analogWrite(leftMotorForward, 155);
+    delay(15);
+    moving = true;
+  }
+  if(left < 0){
+      analogWrite(leftMotorForward, 0);
+      analogWrite(leftMotorBackward, abs(left));
+  } 
+  else{
+      analogWrite(leftMotorForward, left);
+      analogWrite(leftMotorBackward, 0);
+  }
+  if(right < 0){
+      analogWrite(rightMotorForward, 0);
+      analogWrite(rightMotorBackward, abs(right));
+  } 
+  else{
+      analogWrite(rightMotorForward, right);
+      analogWrite(rightMotorBackward, 0);
+  }
+  isDriving = abs(left) + abs(right) > 0;
+  if(right == 0 && left == 0){
+    moving = false;
+  }
 }
 
 //===[Calibration]=========================================
@@ -549,7 +561,7 @@ void start(){
     drive(0,0);
     closeGripper();
     delay(300);
-    rotate(-92);
+    rotate(-96);
     drive(155,130);
     starting = false;
   }
@@ -561,5 +573,5 @@ void openGripper(){
 }
 
 void closeGripper(){
-  analogWrite(gripperPin, 165);
+  analogWrite(gripperPin, 154);
 }
