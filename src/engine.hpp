@@ -19,6 +19,15 @@ int leftRotationLastState;
 int rightRotationState;
 int rightRotationLastState;
 
+// Variables for driving straight by counting pulses of the rotation sensor
+int rightCounter = 0;
+int rightState;
+int rightLastState;
+int leftCounter = 0;
+int leftState;
+int leftLastState;
+long driveStart = 0;
+
 // Variable to indicate whether the robot is driving or not
 bool isDriving = false;
 
@@ -65,6 +74,60 @@ void drive(int left, int right)
     neoDrive(left, right);
     // Update the variable to keep track of whether the robot is moving
     isDriving = abs(left) + abs(right) > 0;
+}
+
+void driveStraight()
+{
+    leftState = digitalRead(leftRotationPin);
+    rightState = digitalRead(rightRotationPin);
+    if (leftState != leftLastState)
+    {
+        leftLastState = leftState;
+        leftCounter++;
+    }
+    if (rightState != rightLastState)
+    {
+        rightLastState = rightState;
+        rightCounter++;
+    }
+    if (driveStart == 0)
+    {
+        driveStart = millis() + 10;
+    }
+    if (leftCounter > rightCounter)
+    {
+        if (millis() > driveStart)
+        {
+            drive(70, 90);
+        }
+        else
+        {
+            drive(230, 250);
+        }
+    }
+    else
+    {
+        if (millis() > driveStart)
+        {
+            drive(90, 70);
+        }
+        else
+        {
+            drive(250, 230);
+        }
+    }
+}
+
+void resetDriveStraight()
+{
+    rightState = 0;
+    leftState = 0;
+    rightLastState = 0;
+    leftLastState = 0;
+    rightCounter = 0;
+    leftCounter = 0;
+    driveStart = 0;
+    drive(0, 0);
 }
 
 // Function to rotate the robot a certain amount of degrees

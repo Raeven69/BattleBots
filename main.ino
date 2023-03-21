@@ -85,8 +85,8 @@ void followLine()
     if (isOnLine)
     {
         // Calculate and set the speed of the left & right wheel based on how far the line is from the middle sensors
-        int leftSpeed = (position < 2500) ? min(max((int)(255 * (3500 - position) / 3500), 50), 250) : 250;
-        int rightSpeed = (position > 4500) ? min(max((int)(255 * (position - 3500) / 3500), 50), 250) : 250;
+        int leftSpeed = position <= 3500 ? max((int)(position / 3500 * 255), 100) : 255;
+        int rightSpeed = position >= 3500 ? max((int)(7000 - position) / (3500 / 255), 100) : 255;
         drive(leftSpeed, rightSpeed);
         // If the line is on the outer left of the robot, set the line direction memory to the left
         if (position < 1000)
@@ -95,7 +95,7 @@ void followLine()
             nextLineDetection = millis() + 1000;
         }
         // If the line is on the outer right of the robot, set the line direction memory to the right
-        else if (position > 6000)
+        if (position > 6000)
         {
             lineDirection = "right";
             nextLineDetection = millis() + 1000;
@@ -109,13 +109,13 @@ void followLine()
     // If the line is no longer found, but according to the memory it is on the left, steer to the left and set NeoPixels accordingly
     else if (lineDirection == "left")
     {
-        drive(50, 250);
+        drive(50, 255);
         nextLineDetection = millis() + 1000;
     }
     // If it's supposedly on the right, steer to the right
     else if (lineDirection == "right")
     {
-        drive(250, 50);
+        drive(255, 50);
         nextLineDetection = millis() + 1000;
     }
 }

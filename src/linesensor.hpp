@@ -67,12 +67,13 @@ void calibrateSensor()
     openGrapper(); 
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-    drive(255, 255);
-    delay(30);
-    drive(90, 76);
+    // drive(255, 255);
+    // delay(30);
+    // drive(90, 76);
     while (true)
     {
         qtr.calibrate();
+        driveStraight();
         if (isAllOnLine())
         {
             if (wasOnLines && lastAllLines > millis() - 2250)
@@ -80,6 +81,7 @@ void calibrateSensor()
                 while (true)
                 {
                     qtr.calibrate();
+                    driveStraight();
                     if (!isAllOnLine())
                     {
                         delay(250);
@@ -100,7 +102,7 @@ void calibrateSensor()
             lastAllLines = 0;
         }
     }
-    drive(0, 0);
+    resetDriveStraight();
     delay(100);
     closeGrapper();
     rotate(-90);
