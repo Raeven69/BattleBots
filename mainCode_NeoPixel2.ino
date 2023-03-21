@@ -1,11 +1,9 @@
 //Libraries
-#include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>               // Library used to control the NeoPixels
 
 
 
 //Pinnumbers
-SoftwareSerial bluetooth(1, 0); // RX | TX  // Define the pins for the bluetooth module
 const int grabberPin = 2;                    // Servo for grabbing the pion
 const int servoPin = 9;                      // Servo for the ultra sonic distance sensor
 const int leftMotorPin1 = 3;                 // Left motor backwards

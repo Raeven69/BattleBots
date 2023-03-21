@@ -1,12 +1,9 @@
 //Libraries
-#include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>               // Library used to control the NeoPixels
 
 
 
-
 //Pinnumbers
-SoftwareSerial bluetooth(1, 0); // RX | TX   // Define the pins for the bluetooth module
 const int grabberPin = 2;                    // Servo for grabbing the pion
 const int servoPin = 9;                      // Servo for the ultra sonic distance sensor
 const int leftMotorPin1 = 3;                 // Left motor backwards
@@ -17,7 +14,7 @@ const int echoPin = 7;                       // Ultra sonic distance sensor echo
 const int rightMotorPin1 = 11;               // Right motor backwards
 const int rightRotationPin = 10;             // Right wheel rotation sensor
 const int leftRotationPin = 12;              // Left wheel rotation sensor
-const int ledPin = 12;                       // -> NI
+const int ledPin = 13;                       // -> NI
 const int ledCount = 4;                      // Amount of Neopixels
 
 Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);
@@ -53,7 +50,6 @@ void setup() {
   pinMode(triggerPin, OUTPUT);    
   pinMode(echoPin, INPUT);           
   Serial.begin(9600);                     // Open serial communication                          
-  bluetooth.begin(9600);                  // Open serial communication for the Bluetooth Serial Port
   pinMode(rightMotorPin1, OUTPUT);    
   pinMode(rightMotorPin2, OUTPUT);
   pinMode(leftMotorPin1, OUTPUT);     
