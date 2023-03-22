@@ -85,8 +85,8 @@ void followLine()
     if (isOnLine)
     {
         // Calculate and set the speed of the left & right wheel based on how far the line is from the middle sensors
-        int leftSpeed = position <= 3500 ? max((int)(position / 3500 * 255), 100) : 255;
-        int rightSpeed = position >= 3500 ? max((int)(7000 - position) / (3500 / 255), 100) : 255;
+        int leftSpeed = (position < 2500) ? min(max((int)(255 * (3500 - position) / 3500), 50), 255) : 255;
+        int rightSpeed = (position > 4500) ? min(max((int)(255 * (position - 3500) / 3500), 50), 255) : 255;
         drive(leftSpeed, rightSpeed);
         // If the line is on the outer left of the robot, set the line direction memory to the left
         if (position < 1000)
@@ -95,7 +95,7 @@ void followLine()
             nextLineDetection = millis() + 1000;
         }
         // If the line is on the outer right of the robot, set the line direction memory to the right
-        if (position > 6000)
+        else if (position > 6000)
         {
             lineDirection = "right";
             nextLineDetection = millis() + 1000;
