@@ -395,39 +395,39 @@ void followLine(){
   }
   // If line is centered
   else if (innerLeft == 1 && innerRight == 1){
-    moveForward(200,190);
+    moveForward(255,240);
   }
   // If line is slightly centered
   else if (innerLeft == 1 && innerRight == 0){
-    moveForward(180,200);
+    moveForward(230,255);
   }
   // If line is slightly centered
   else if (innerLeft == 0 && innerRight == 1){
-    moveForward(200,165);
+    moveForward(255,205);
   }
   // If line is slightly to the left
   else if (left == 1){
-    moveForward(150,200);
+    moveForward(185,255);
   }
   // If line is slightly to the right
   else if (right == 1){
-    moveForward(210,130);
+    moveForward(255,175);
   }
   // If line is to the left
   else if (farLeft == 1){
-    moveForward(0,180);
+    moveForward(0,255);
   }
   // If line is to the right
   else if (farRight == 1){
-    moveForward(180,0);
+    moveForward(255,0);
   }
   // If line is far to the right
   else if (outerRight == 1){
-    moveForward(180,0);
+    moveForward(255,0);
   }
   // If line is far to the left
   else if (outerLeft == 1){
-    moveForward(0,180);
+    moveForward(0,255);
   }
   // If the BattleBot lost the line
   else{
@@ -440,7 +440,7 @@ void followLine(){
       drive(0,0);
       delay(150);
       rightLight();
-      rotate(92);                                        // Turn right
+      rotate(95);                                        // Turn right
       delay(160);
       bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
       bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
@@ -452,7 +452,7 @@ void followLine(){
       bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
         leftLight();
-        rotate(-195);                                    // Turn far left
+        rotate(-193);                                    // Turn far left
         delay(160);
         bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
         bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
@@ -552,7 +552,7 @@ void start(){
     drive(0,0);
     closeGripper();
     delay(300);
-    rotate(-100);
+    rotate(-96);
     drive(155,130);
     starting = false;
   }
