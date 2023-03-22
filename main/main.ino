@@ -43,7 +43,7 @@ const int lineSensorFarLeft= A6;                          //
 const int lineSensorOuterLeft = A7;                       // 
 
 //===[Const int NeoPixels]==================================
-const int ledPin = 12;                                    // -> NI
+const int ledPin = 12;                                    // set Neopixel pin to 12
 const int ledCount = 4;                                   // Amount of Neopixels
 Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);
 
@@ -108,7 +108,7 @@ int getLineSensorSensitivity(int margin = 100){           // Get Sensitivity fro
 }
 
 /************************************
-***      Setup + Digital I/O      ***
+***       Setup Digital I/O       ***
 ************************************/
 
 void setup(){
@@ -137,9 +137,9 @@ void setup(){
   #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
     clock_prescale_set(clock_div_1);
   #endif
-    strip.begin();                                        // Initialize NeoPixel strip
+    strip.begin();                                        // INITIALIZE NeoPixel strip object
     strip.show();                                         // Turn OFF all pixels
-    strip.setBrightness(100);                             // Brightness (0-255)
+    strip.setBrightness(100);                             // Set BRIGHTNESS
 
   pinMode(ledPin, OUTPUT);                                // Set ledPin to OUTPUT
 
@@ -257,7 +257,7 @@ void rightLight(){
   strip.show();
 }
 
-//===[Elektromotoren]========================
+//===[Elektromotoren + Line sensor]========================
 void moveForward(int left, int right){
 
   goesForward = true;
@@ -294,7 +294,6 @@ void moveStop(){
   digitalWrite(leftMotorBackward, LOW);
 }
 
-//===[Line sensor]===========================
 void turnRight(){
   bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
   bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
@@ -306,7 +305,7 @@ void turnRight(){
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-    moveForward(180,0);
+    moveForward(190,0);
   }
   if(innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){    
                                                           // if line is in the middle
@@ -327,7 +326,7 @@ void turnLeft(){
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
     mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
-    moveForward(0,180);
+    moveForward(0,190);
   }
   if(innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){    
                                                            // if line is in the middle
@@ -562,7 +561,7 @@ void start(){
     drive(0,0);
     closeGripper();
     delay(300);
-    rotate(-96);
+    rotate(-100);
     drive(155,130);
     starting = false;
   }
