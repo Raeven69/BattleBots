@@ -9,14 +9,14 @@
 ************************************/
 #include <QTRSensors.h>
 #include <SoftwareSerial.h>
-#include <Adafruit_NeoPixel.h>                            // Library used to control the NeoPixels
-#define bluetoothRX 2                                     // Define bluetoothRX pin 2
-#define bluetoothTX 8                                     // Define bluetoothTX pin 8
-SoftwareSerial mySerial(bluetoothRX, bluetoothTX);      
+#include <Adafruit_NeoPixel.h>                            // Library used to control the NeoPixels     
 
 /************************************
 ***           Variables           ***
 ************************************/
+
+const int sonarTrigger = 8;
+const int sonarEcho = 9;
 
 const int gripperPin = 10;                                // Set gripperPin to pin 10
 
@@ -93,11 +93,14 @@ bool gripperClosed = false;
 
 bool moving = false;
 
+bool starting = false;
+
+bool startSignal = false;
+
 //===[Sensor Calibration]===================================
 const int calibrationTime = 35;                           // in milliseconds * 20 (50 = 1 second)
 const bool shouldCalibrate = true;                        // Start calibrate
 
-bool starting = true;
 
 int getLineSensorSensitivity(int margin = 100){           // Get Sensitivity from lineSensor
     int totalSize = 0;
@@ -113,6 +116,9 @@ int getLineSensorSensitivity(int margin = 100){           // Get Sensitivity fro
 
 void setup(){
   // put your setup code here, to run once:
+
+  pinMode(sonarTrigger, OUTPUT);
+  pinMode(sonarEcho, INPUT);
 
   //===[Set lineSensor to INPUT]===========================
   pinMode(lineSensorOuterRight, INPUT);
@@ -149,7 +155,6 @@ void setup(){
     ;
   }
 
-  mySerial.begin(9600);
 
   qtr.setTypeAnalog();                                    // Initialize linesSensor
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);  // Initialize linesSensor
@@ -171,7 +176,22 @@ void loop(){
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   
-  if (starting == true){                                  // Start procedure
+  if(startSignal == false){
+    int duration;
+    int distance;
+    digitalWrite(sonarTrigger, HIGH);
+    digitalWrite(sonarTrigger, LOW);
+    duration = pulseIn(sonarEcho, HIGH); 
+    distance = (duration * 0.034)/2;
+    Serial.println(distance);
+    delay(20);
+    if(distance > 20 && distance < 30){
+      delay(2800);
+      starting = true;
+      startSignal = true;
+    }
+  }
+  else if (starting == true){                                  // Start procedure
     openGripper();                                        // Open Gripper
     start();                        
   }
@@ -190,22 +210,18 @@ void loop(){
     delay(400);                                           // Delay
     moveStop();                                           // Stop turning
     onceTurnRight = true;                                 // It Moved away from the line
-    mySerial.println("onceTurnRight = true");
   }
   else if(isTurnRight == true && onceTurnRight == true && starting == false && endReached == false){
     rightLight();                                         // Turn signal
     turnRight();                                          // Turn right
-    mySerial.println("turnRight");
   }
   else if(isTurnLeft == true && onceTurnLeft == false && starting == false && endReached == false){
     moveForward(0,170);                                   // Turn left
     delay(350);                                           // Delay
     moveStop();                                           // Stop turning
     onceTurnLeft = true;                                  // It Moved away from the line
-    mySerial.println("onceTurnLeft = true");
   }
   else if(isTurnLeft == true && onceTurnLeft == true && starting == false && endReached == false){
-    mySerial.println("Turning left");
     turnLeft();                                           // Turn left
   }
   else{
@@ -304,7 +320,6 @@ void turnRight(){
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(190,0);
   }
   if(innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){    
@@ -325,7 +340,6 @@ void turnLeft(){
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
     moveForward(0,190);
   }
   if(innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){    
@@ -346,13 +360,7 @@ void followLine(){
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
 
-  if( mySerial.available() > 0){
-    val = mySerial.read();
-    mySerial.println(val);
-    if( val == 'o'){
-      endReached = true;
-    }
-  }
+
   if(right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1){
     drive(0,0);                                          // Stop
     delay(100);                                          // Delay
@@ -382,64 +390,47 @@ void followLine(){
   }
   // If detecting a path to the right
   else if (((outerRight == 1 && farLeft == 0) && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1 && farLeft == 0 && outerLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && innerLeft == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (farRight == 1 && outerRight == 1 && farLeft == 0) || (outerRight == 1 && (innerRight == 1 || innerLeft == 1 || left == 1)  && farLeft == 0)){
-    mySerial.println("Bocht naar rechts");
     moveStop();                                          // Stop
     isTurnRight = true;                                  // Turn right
   }
   // If line is centered
   else if (innerLeft == 1 && innerRight == 1){
     moveForward(200,190);
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is slightly centered
   else if (innerLeft == 1 && innerRight == 0){
     moveForward(180,200);
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is slightly centered
   else if (innerLeft == 0 && innerRight == 1){
     moveForward(200,165);
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is slightly to the left
   else if (left == 1){
     moveForward(150,200);
-    mySerial.println("Iets naar links");
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is slightly to the right
   else if (right == 1){
     moveForward(210,130);
-    mySerial.println("Iets naar rechts");
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is to the left
   else if (farLeft == 1){
     moveForward(0,180);
-    mySerial.println("Naar links");
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is to the right
   else if (farRight == 1){
     moveForward(180,0);
-    mySerial.println("Naar rechts");
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is far to the right
   else if (outerRight == 1){
     moveForward(180,0);
-    mySerial.println("Naar rechts");
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If line is far to the left
   else if (outerLeft == 1){
     moveForward(0,180);
-    mySerial.println("Naar links");
-    mySerial.println(String(outerLeft) + " " + String(farLeft) + " " + String(left) + " " + String(innerLeft) + " " + String(innerRight) + " " + String(right) + " " + String(farRight) + " " + String(outerRight));
   }
   // If the BattleBot lost the line
   else{
-    mySerial.println("Ik zie niks meer");
     if (endReached == true){
       moveStop();
     }
