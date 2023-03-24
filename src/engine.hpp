@@ -76,6 +76,7 @@ void drive(int left, int right)
     isDriving = abs(left) + abs(right) > 0;
 }
 
+// Function for driving in a straight line, uses the pulse counter for making sure both wheels turned the same amount of times
 void driveStraight()
 {
     leftState = digitalRead(leftRotationPin);
@@ -118,6 +119,7 @@ void driveStraight()
     }
 }
 
+// Function for resetting pulse values for driving in a straight line
 void resetDriveStraight()
 {
     rightState = 0;

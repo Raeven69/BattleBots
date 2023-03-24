@@ -64,12 +64,9 @@ bool isAllOnLine()
 void calibrateSensor()
 {
     // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
-    openGrapper(); 
+    openGrapper();
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-    // drive(255, 255);
-    // delay(30);
-    // drive(90, 76);
     while (true)
     {
         qtr.calibrate();
