@@ -148,7 +148,7 @@ void startPosition() {                  // This function makes the battlebot dri
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-  left = 237;
+  left = 241;
   right = 231;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -157,7 +157,7 @@ void driveForward() {                   // This function activates both motors a
 }
 
 void driveStraightForward() {                   // This function activates both motors and will make the battlebot drive forward
-  left = 236;
+  left = 240;
   right = 231;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -186,7 +186,7 @@ void brake() {                          // This function deactivates both motors
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
   counterLeft = 0;
-  while(counterLeft < 1){
+  while(counterLeft < 2){
     readRotationLeft();
     left = 255;
     right = 255;
@@ -209,7 +209,7 @@ void turnRight() {                      // This function will make the battlebot
 
 void driveInMaze() {                       // This function will make the battlebot make a 90 degree left turn
   counterRight = 0;
-  while(counterRight < 1){
+  while(counterRight < 2){
     readRotationRight();
     left = 255;
     right = 255;
@@ -231,7 +231,7 @@ void driveInMaze() {                       // This function will make the battle
 
 void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
   counterRight = 0;
-  while(counterRight < 1){
+  while(counterRight < 2){
     readRotationRight();
     left = 255;
     right = 255;
@@ -508,7 +508,7 @@ void calibrateSensor()
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
   forward(253,255);
   delay(30);
-  forward(115,110);
+  forward(117,110);
   while (true)
   {
     qtr.calibrate();
