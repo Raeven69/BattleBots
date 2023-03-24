@@ -1,5 +1,7 @@
 //Libraries
+#include <QTRSensors.h>
 
+QTRSensors qtr; 
 
 
 //Pinnumbers
@@ -13,10 +15,19 @@ const int echoPin = 7;                       // Ultra sonic distance sensor echo
 const int rightMotorPin1 = 11;               // Right motor backwards
 const int rightRotationPin = 10;             // Right wheel rotation sensor
 const int leftRotationPin = 12;              // Left wheel rotation sensor
+const int lineSensorOuterRight = A0;
+const int lineSensorFarRight = A1;
+const int lineSensorRight = A2;
+const int lineSensorInnerRight = A3;
+const int lineSensorInnerLeft = A4;
+const int lineSensorLeft = A5;
+const int lineSensorFarLeft = A6;
+const int lineSensorOuterLeft = A7;
 
 
 
 //Variables
+bool grabberIsClosed = false;
 int counterRight = 0;                     // Counts the amount of pulses detected by the rotation sensor
 int counterLeft = 0;
 int rotationStateRight;                   // Saves the rotation state
@@ -35,7 +46,11 @@ boolean turnedLeft = false;
 boolean turnedRight = false;
 boolean turnedAround = false;
 boolean started = false;
-boolean shouldCalibrate = false;
+uint16_t sensorValues[8];                 // An array to store the current values of the sensors in
+bool isOnLine;                            // Variable to keep track of whether the robot is on the line or not
+uint16_t position;                        // Variable to store the position of the line relative to the sensors
+bool wasOnLines = false;                  // Calibration line counting variables
+long lastAllLines = 0;                    // Variable for keeping the last time the robot was on a black line
 
 
 
@@ -53,15 +68,22 @@ void setup() {
   pinMode(leftMotorPin2, OUTPUT);
   pinMode(rightRotationPin, INPUT);   
   pinMode(leftRotationPin, INPUT);   
+  pinMode(lineSensorOuterRight, INPUT);
+  pinMode(lineSensorFarRight, INPUT);
+  pinMode(lineSensorRight, INPUT);
+  pinMode(lineSensorInnerRight, INPUT);
+  pinMode(lineSensorInnerLeft, INPUT);
+  pinMode(lineSensorLeft, INPUT);
+  pinMode(lineSensorFarLeft, INPUT);
+  pinMode(lineSensorOuterLeft, INPUT);
+  grabberOpen();
+  calibrateSensor();
 }
 
 
 
 //Loop
 void loop() {
-  if(started == false) {
-    startPosition();
-  }
   hugRightWall();
 }
 
@@ -100,6 +122,18 @@ void forwardHalfSquare() {               // This function makes the battlebot dr
   }
   counterLeft = 0;
   while(counterLeft < 29) {
+    readRotationLeft();
+    driveStraightForward();
+  }
+}
+
+void forwardInMaze() {               // This function makes the battlebot drive on square forward in the maze
+  while(counterLeft < 1) {
+    readRotationLeft();
+    calibrateDrive();
+  }
+  counterLeft = 0;
+  while(counterLeft < 20) {
     readRotationLeft();
     driveStraightForward();
   }
@@ -171,6 +205,28 @@ void turnRight() {                      // This function will make the battlebot
   counterRight = 0;
   forwardHalfSquare();
   counterLeft = 0;
+}
+
+void driveInMaze() {                       // This function will make the battlebot make a 90 degree left turn
+  counterRight = 0;
+  while(counterRight < 1){
+    readRotationRight();
+    left = 255;
+    right = 255;
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    analogWrite(rightMotorPin2, right);
+  }
+  counterRight = 0;
+  while(counterRight < 32) {
+    readRotationRight();
+    forwardsRight();
+  }
+  brake();
+  counterLeft = 0;
+  counterRight = 0;
+  forwardInMaze();
 }
 
 void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
@@ -396,4 +452,102 @@ void hugRightWall() {
   else {
     checking = false;
   }
+}
+
+//closes the grabber
+void grabberClosed() {
+  digitalWrite(grabberPin, HIGH);
+  delayMicroseconds(1025); // Duration of the pusle in microseconds
+  digitalWrite(grabberPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+}
+
+// opens the grabber
+void grabberOpen() {
+  digitalWrite(grabberPin, HIGH);
+  delayMicroseconds(1650); // Duration of the pusle in microseconds
+  digitalWrite(grabberPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+}
+
+void updateLineData()
+{
+  position = qtr.readLineBlack(sensorValues);
+  bool isCurrentlyOnLine = false;
+  for (int i = 0; i < 8; i++)
+  {
+    if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 100)
+    {
+      isCurrentlyOnLine = true;
+      break;
+    }
+  }
+  isOnLine = isCurrentlyOnLine;
+}
+
+bool isAllOnLine()
+{
+  updateLineData();
+  bool allSensors = true;
+  for (int i = 0; i < 8; i++)
+  {
+    if (sensorValues[i] < qtr.calibrationOn.maximum[i] - 100)
+    {
+      allSensors = false;
+      break;
+    }
+  }
+  return allSensors;
+}
+
+void calibrateSensor()
+{
+  // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
+  grabberOpen(); 
+  qtr.setTypeAnalog();
+  qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
+  forward(253,255);
+  delay(30);
+  forward(115,110);
+  while (true)
+  {
+    qtr.calibrate();
+    if (isAllOnLine())
+    {
+      if (wasOnLines && lastAllLines > millis() - 2000)
+      {
+        while (true)
+        {
+          qtr.calibrate();
+          if (!isAllOnLine())
+          {
+            delay(250);
+            break;
+          }
+        }
+        break;
+      }
+      else
+      {
+        wasOnLines = true;
+        lastAllLines = millis();
+      }
+    }
+    else
+    {
+        wasOnLines = false;
+        lastAllLines = 0;
+    }
+  }
+  brake();
+  delay(100);
+  grabberClosed();
+  driveInMaze();
+}
+
+void forward(int left, int right) {                   // This function activates both motors and will make the battlebot drive forward
+  analogWrite(leftMotorPin2, left);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
+  digitalWrite(rightMotorPin1, LOW);   
 }
