@@ -85,8 +85,28 @@ void followLine()
     if (isOnLine)
     {
         // Calculate and set the speed of the left & right wheel based on how far the line is from the middle sensors
-        int leftSpeed = (position < 3000) ? max((int)(255 * (3500 - position) / 3500), 100) : 255;
-        int rightSpeed = (position > 4000) ? max((int)(255 * (position - 3500) / 3500), 100) : 255;
+        const int minSpeed = 70;
+        const int maxSpeed = 250;
+
+        int leftSpeed, rightSpeed;
+
+        if (position < 2500) {
+            leftSpeed = (255 * (3500 - position)) / 3500;
+            leftSpeed = max(minSpeed, leftSpeed);
+            leftSpeed = min(maxSpeed, leftSpeed);
+            rightSpeed = maxSpeed;
+        }
+        else if (position > 4500) {
+            rightSpeed = (255 * (position - 3500)) / 3500;
+            rightSpeed = max(minSpeed, rightSpeed);
+            rightSpeed = min(maxSpeed, rightSpeed);
+            leftSpeed = maxSpeed;
+        }
+        else {
+            leftSpeed = maxSpeed;
+            rightSpeed = maxSpeed;
+        }
+
         drive(leftSpeed, rightSpeed);
         // If the line is on the outer left of the robot, set the line direction memory to the left
         if (position < 1000)
