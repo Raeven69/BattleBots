@@ -206,8 +206,8 @@ void loop(){
   }
   else if(isTurnRight == true && onceTurnRight == false && starting == false && endReached == false){
     rightLight();                                         // Turnsignal
-    drive(170,0);                                   // Turn right
-    delay(400);                                           // Delay
+    drive(200,0);                                   // Turn right
+    delay(350);                                           // Delay
     moveStop();                                           // Stop turning
     onceTurnRight = true;                                 // It Moved away from the line
   }
@@ -216,8 +216,8 @@ void loop(){
     turnRight();                                          // Turn right
   }
   else if(isTurnLeft == true && onceTurnLeft == false && starting == false && endReached == false){
-    drive(0,170);                                   // Turn left
-    delay(350);                                           // Delay
+    drive(0,200);                                   // Turn left
+    delay(300);                                           // Delay
     moveStop();                                           // Stop turning
     onceTurnLeft = true;                                  // It Moved away from the line
   }
@@ -347,7 +347,7 @@ void turnRight(){
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
-    drive(190,0);
+    drive(210,0);
   }
   if(innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){    
                                                           // if line is in the middle
@@ -367,7 +367,7 @@ void turnLeft(){
   bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
   bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
   if(innerRight == 0 || innerLeft == 0){
-    drive(0,190);
+    drive(0,210);
   }
   if(innerRight == 1 || (innerRight == 1 && innerLeft == 1) || innerLeft == 1){    
                                                            // if line is in the middle
@@ -528,7 +528,7 @@ void start(){
     drive(0,0);
     closeGripper();
     delay(300);
-    rotate(-96);
+    rotate(-99);
     drive(155,130);
     starting = false;
   }
