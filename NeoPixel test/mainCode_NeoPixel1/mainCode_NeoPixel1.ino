@@ -102,7 +102,7 @@ void forwardLight(){
 
 void backwardLight()
 {
-    strip.clear();
+   strip.clear();
   strip.setPixelColor(0, strip.Color(255, 255, 255));
   strip.setPixelColor(1, strip.Color(255, 255, 255));  
   strip.show();

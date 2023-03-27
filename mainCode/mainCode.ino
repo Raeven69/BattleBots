@@ -51,6 +51,7 @@ bool isOnLine;                            // Variable to keep track of whether t
 uint16_t position;                        // Variable to store the position of the line relative to the sensors
 bool wasOnLines = false;                  // Calibration line counting variables
 long lastAllLines = 0;                    // Variable for keeping the last time the robot was on a black line
+boolean calibrated = false;
 
 
 
@@ -148,6 +149,19 @@ void rightLight(){
   strip.show();
 }
 
+void calibrateLight(){                     
+  strip.clear();
+  if(millis() >= timeNe + 150){
+    timeNe = millis() + 150;
+    
+    strip.setPixelColor(1, strip.Color(255, 255, 50));
+    strip.setPixelColor(2, strip.Color(255, 255, 50));
+    strip.setPixelColor(3, strip.Color(255, 255, 50));
+    strip.setPixelColor(0, strip.Color(255, 255, 50));
+    }
+  strip.show();
+}
+
 void detectWall() {                     // This function activates the ultra sonic distance sensor and it calculates the distance of the object 
   digitalWrite(triggerPin, LOW);        // in front of it in centimetres
   delayMicroseconds(5);
@@ -207,8 +221,8 @@ void startPosition() {                  // This function makes the battlebot dri
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
   forwardLight();
-  left = 236;
-  right = 231;
+  left = 242;
+  right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
@@ -217,8 +231,8 @@ void driveForward() {                   // This function activates both motors a
 
 void driveStraightForward() {                   // This function activates both motors and will make the battlebot drive forward
   forwardLight();
-  left = 237;
-  right = 231;
+  left = 241;
+  right = 232;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
@@ -325,8 +339,8 @@ void calibrateDrive() {                // This function will make both wheels sp
 
 void backwardsLeft() {                 // This function will make the left wheel turn backward
   leftLight();
-  left = 200;
-  right = 200;
+  left = 220;
+  right = 220;
   digitalWrite(leftMotorPin2, LOW);
   analogWrite(leftMotorPin1, left);
   digitalWrite(rightMotorPin2, LOW);
@@ -335,8 +349,8 @@ void backwardsLeft() {                 // This function will make the left wheel
 
 void forwardsLeft() {                   // This function will make the left wheel turn forward
   rightLight();
-  left = 200;
-  right = 200;
+  left = 220;
+  right = 220;
   analogWrite(leftMotorPin2, right);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin2, LOW);
@@ -345,8 +359,8 @@ void forwardsLeft() {                   // This function will make the left whee
 
 void backwardsRight() {                 // This function will make the right wheel turn backward
   rightLight();
-  left = 200;
-  right = 200;
+  left = 220;
+  right = 220;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin1, right);
@@ -355,8 +369,8 @@ void backwardsRight() {                 // This function will make the right whe
 
 void forwardsRight() {                  // This function will make the right wheel turn forward
   leftLight();
-  left = 200;
-  right = 200;
+  left = 220;
+  right = 220;
   digitalWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   digitalWrite(rightMotorPin1, LOW);
@@ -377,17 +391,13 @@ void turnAround() {                 // This function will make the battlebot mak
   if (distanceLeft < distanceRight){
     counterLeft = 0;
     counterRight = 0;
-    while(counterRight < 33) {
+    while(counterRight < 34) {
       readRotationRight();
       backwardsRight();
     }
     brake();
-    while(counterLeft < 2) {
-      readRotationLeft();
-      driveForward();
-    }
     counterLeft = 0;
-    while(counterLeft < 33) {
+    while(counterLeft < 34) {
       readRotationLeft();
       forwardsLeft();
     }
@@ -406,17 +416,13 @@ void turnAround() {                 // This function will make the battlebot mak
   else {
     counterLeft = 0;
     counterRight = 0;
-    while(counterLeft < 33) {
+    while(counterLeft < 34) {
       readRotationLeft();
       backwardsLeft();
     }
     brake();
-    while(counterLeft < 2) {
-      readRotationLeft();
-      driveForward();
-    }
     counterLeft = 0;
-    while(counterRight < 33) {
+    while(counterRight < 34) {
       readRotationRight();
       forwardsRight();
     }
@@ -536,7 +542,7 @@ void hugRightWall() {
 //closes the grabber
 void grabberClosed() {
   digitalWrite(grabberPin, HIGH);
-  delayMicroseconds(1025); // Duration of the pusle in microseconds
+  delayMicroseconds(950); // Duration of the pusle in microseconds
   digitalWrite(grabberPin, LOW);
   delayMicroseconds(18550); // 20ms - duration of the pusle
 }
@@ -587,7 +593,7 @@ void calibrateSensor()
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
   forward(253,255);
   delay(30);
-  forward(116,110);
+  forward(117,110);
   while (true)
   {
     qtr.calibrate();
@@ -622,6 +628,7 @@ void calibrateSensor()
   delay(100);
   grabberClosed();
   driveInMaze();
+  calibrated = true;
 }
 
 void forward(int left, int right) {                   // This function activates both motors and will make the battlebot drive forward
