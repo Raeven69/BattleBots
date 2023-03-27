@@ -1,7 +1,7 @@
 /************************************
 ***     INF1A Bot Eugene Krabs    ***
-***            13-3-2023          ***
-***            Versie 0.8         ***
+***            27-3-2023          ***
+***            Versie 0.9         ***
 ************************************/
 
 /************************************
@@ -200,7 +200,7 @@ void loop(){
     followLine();                                         // FollowLine
   }
   else if(rotating == true && starting == false && endReached == false){
-    rotateLight();                                        // Turnsignal
+    // rotateLight();                                        // Turnsignal
     rotate(180);                                          // Rotate 180 degrees
     rotating = false;                                     // Stop rotating
   }
@@ -241,12 +241,12 @@ void forwardLight(){
   strip.show();
 }
   
-void rotateLight(){
+void stationaryLight(){
   strip.clear();
   strip.setPixelColor(0, strip.Color(0, 255, 0));
   strip.setPixelColor(1, strip.Color(0, 255, 0));
-  strip.setPixelColor(2, strip.Color(0, 255, 0));
-  strip.setPixelColor(3, strip.Color(0, 255, 0));
+  // strip.setPixelColor(2, strip.Color(0, 255, 0));
+  // strip.setPixelColor(3, strip.Color(0, 255, 0));
   strip.show();
 }
 
@@ -300,6 +300,7 @@ void drive(int left, int right){
   }
   isDriving = abs(left) + abs(right) > 0;
   if(right == 0 && left == 0){
+    stationaryLight();
     moving = false;
   }
 }
