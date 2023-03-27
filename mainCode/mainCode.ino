@@ -1,5 +1,6 @@
 //Libraries
 #include <QTRSensors.h>
+#include <Adafruit_NeoPixel.h>               // Library used to control the NeoPixels
 
 QTRSensors qtr; 
 
@@ -15,6 +16,7 @@ const int echoPin = 7;                       // Ultra sonic distance sensor echo
 const int rightMotorPin1 = 11;               // Right motor backwards
 const int rightRotationPin = 10;             // Right wheel rotation sensor
 const int leftRotationPin = 12;              // Left wheel rotation sensor
+const int ledPin = 13;                       // Neopixels
 const int lineSensorOuterRight = A0;
 const int lineSensorFarRight = A1;
 const int lineSensorRight = A2;
@@ -23,6 +25,9 @@ const int lineSensorInnerLeft = A4;
 const int lineSensorLeft = A5;
 const int lineSensorFarLeft = A6;
 const int lineSensorOuterLeft = A7;
+const int ledCount = 4;                      // Amount of neopixels
+
+Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);
 
 
 
@@ -36,16 +41,11 @@ int rotationLastStateRight;               // Remembers the last rotation state
 int rotationLastStateLeft;
 int left = 255;                           // Speed of the left motor
 int right = 255;                          // Speed of the right motor
+unsigned long timeNe = 0;                 // Start value for millis Neopixel
 unsigned long duration;                   // Time detected by the ultra sonic distance sensor
 double distance;                          // Distance in centimetres
-const double wheelCircumference = 20.41;  // Circumference of the wheel in centimetres
-const double pulseDistance = 0.51;        // The amount of centimetres the battlebot will drive forward in 1 pulse
-const int rotation = 40;                  // The amount of pulses for the wheel to reach one rotation
-boolean checking = false;
-boolean turnedLeft = false;
-boolean turnedRight = false;
-boolean turnedAround = false;
-boolean started = false;
+boolean checking = false;                 // Variable to check if the robot is checking for a path
+boolean started = false;                  // 
 uint16_t sensorValues[8];                 // An array to store the current values of the sensors in
 bool isOnLine;                            // Variable to keep track of whether the robot is on the line or not
 uint16_t position;                        // Variable to store the position of the line relative to the sensors
@@ -76,6 +76,14 @@ void setup() {
   pinMode(lineSensorLeft, INPUT);
   pinMode(lineSensorFarLeft, INPUT);
   pinMode(lineSensorOuterLeft, INPUT);
+  #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
+    clock_prescale_set(clock_div_1);
+  #endif
+    strip.begin();                        // Initialize NeoPixel strip
+    strip.show();                         // Turn OFF all pixels
+    strip.setBrightness(100);             // Brightness (0-255)
+
+  pinMode(ledPin, OUTPUT);                // Set ledPin to OUTPUT  
   grabberOpen();
   calibrateSensor();
 }
@@ -90,6 +98,56 @@ void loop() {
 
 
 //Functions
+void forwardLight(){
+  strip.clear();
+  strip.setPixelColor(2, strip.Color(255, 255, 255));
+  strip.setPixelColor(3, strip.Color(255, 255, 255));  
+  strip.setPixelColor(0, strip.Color(255, 255, 255)); 
+  strip.setPixelColor(1, strip.Color(255, 255, 255)); 
+  strip.show();
+}
+
+void backwardLight(){
+   strip.clear();
+  strip.setPixelColor(0, strip.Color(0, 255, 0));
+  strip.setPixelColor(1, strip.Color(0, 255, 0)); 
+  strip.setPixelColor(2, strip.Color(0, 255, 0));
+  strip.setPixelColor(3, strip.Color(0, 255, 0));   
+  strip.show();
+}
+
+void rotateLight(){
+  strip.clear();
+  strip.setPixelColor(0, strip.Color(0, 255, 0));
+  strip.setPixelColor(1, strip.Color(0, 255, 0));
+  strip.setPixelColor(2, strip.Color(0, 255, 0));
+  strip.setPixelColor(3, strip.Color(0, 255, 0));
+  strip.show();
+}
+
+void leftLight(){
+  strip.clear();
+  strip.clear();
+  if(millis() >= timeNe + 150){
+    timeNe = millis() + 150;
+    
+    strip.setPixelColor(0, strip.Color(255, 255, 50));
+    strip.setPixelColor(3, strip.Color(255, 255, 50));
+  }
+  strip.show();
+}
+
+void rightLight(){
+  strip.clear();
+  if(millis() >= timeNe + 150){
+    timeNe = millis() + 150;
+    
+    strip.setPixelColor(1, strip.Color(255, 255, 50));
+    strip.setPixelColor(2, strip.Color(255, 255, 50));
+    }
+  strip.show();
+}
+
 void detectWall() {                     // This function activates the ultra sonic distance sensor and it calculates the distance of the object 
   digitalWrite(triggerPin, LOW);        // in front of it in centimetres
   delayMicroseconds(5);
@@ -148,7 +206,8 @@ void startPosition() {                  // This function makes the battlebot dri
 }
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
-  left = 241;
+  forwardLight();
+  left = 236;
   right = 231;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -157,7 +216,8 @@ void driveForward() {                   // This function activates both motors a
 }
 
 void driveStraightForward() {                   // This function activates both motors and will make the battlebot drive forward
-  left = 240;
+  forwardLight();
+  left = 237;
   right = 231;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -166,6 +226,7 @@ void driveStraightForward() {                   // This function activates both 
 }
 
 void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
+  backwardLight();
   left = 237;
   right = 232;
   analogWrite(leftMotorPin1, left);
@@ -175,13 +236,14 @@ void driveBackward() {                   // This function activates both motors 
 }
 
 void brake() {                          // This function deactivates both motors and will make the battlebot stop driving for a short time
+  backwardLight();
   left = 0;
   right = 0;
   analogWrite(leftMotorPin2, LOW);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, LOW);
   digitalWrite(rightMotorPin1, LOW);
-  delay(500); 
+  delay(250); 
 }
 
 void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
@@ -251,7 +313,8 @@ void turnLeft() {                       // This function will make the battlebot
   forwardHalfSquare();
 }
 
-void calibrateDrive() {
+void calibrateDrive() {                // This function will make both wheels spin at the maximum speed
+  forwardLight();
   left = 255;
   right = 255;
   analogWrite(leftMotorPin2, left);
@@ -261,6 +324,7 @@ void calibrateDrive() {
 }
 
 void backwardsLeft() {                 // This function will make the left wheel turn backward
+  leftLight();
   left = 200;
   right = 200;
   digitalWrite(leftMotorPin2, LOW);
@@ -270,6 +334,7 @@ void backwardsLeft() {                 // This function will make the left wheel
 }
 
 void forwardsLeft() {                   // This function will make the left wheel turn forward
+  rightLight();
   left = 200;
   right = 200;
   analogWrite(leftMotorPin2, right);
@@ -279,6 +344,7 @@ void forwardsLeft() {                   // This function will make the left whee
 }
 
 void backwardsRight() {                 // This function will make the right wheel turn backward
+  rightLight();
   left = 200;
   right = 200;
   digitalWrite(leftMotorPin2, LOW);
@@ -288,6 +354,7 @@ void backwardsRight() {                 // This function will make the right whe
 }
 
 void forwardsRight() {                  // This function will make the right wheel turn forward
+  leftLight();
   left = 200;
   right = 200;
   digitalWrite(leftMotorPin2, LOW);
@@ -296,7 +363,7 @@ void forwardsRight() {                  // This function will make the right whe
   analogWrite(rightMotorPin2, right);
 }
 
-void turnAround() {                 // This function will make the battlebot make a 180 degree turn to the left
+void turnAround() {                 // This function will make the battlebot make a 180 degree turn
   double distanceLeft = 0;
   double distanceRight = 0;
   servoLeft();
@@ -314,6 +381,12 @@ void turnAround() {                 // This function will make the battlebot mak
       readRotationRight();
       backwardsRight();
     }
+    brake();
+    while(counterLeft < 2) {
+      readRotationLeft();
+      driveForward();
+    }
+    counterLeft = 0;
     while(counterLeft < 33) {
       readRotationLeft();
       forwardsLeft();
@@ -337,6 +410,12 @@ void turnAround() {                 // This function will make the battlebot mak
       readRotationLeft();
       backwardsLeft();
     }
+    brake();
+    while(counterLeft < 2) {
+      readRotationLeft();
+      driveForward();
+    }
+    counterLeft = 0;
     while(counterRight < 33) {
       readRotationRight();
       forwardsRight();
@@ -407,19 +486,19 @@ void hugRightWall() {
     checking = true;                                          
     brake();    
     servoRight();                                              // Position the servo to look to the right
-    delay(500);
+    delay(300);
     detectWall();                                             // Activates the ultra sonic distance sensor and checks if there is a wall
     if(distance < 20) {                                       // If a wall is detected on the right side, position the servo to look to the front
       servoFront();
-      delay(500);
+      delay(300);
       detectWall();
       if(distance < 15) {                                     // If a wall is detected on the front side, position the servo to the left
         servoLeft();
-        delay(500);
+        delay(300);
         detectWall(); 
         if(distance < 20) {                                   // If a wall is detected on the left side, the battlebot will turn around
           servoFront();
-          delay(500);
+          delay(300);
           counterLeft = 0;
           counterRight = 0;
           turnAround();
@@ -435,7 +514,7 @@ void hugRightWall() {
       }
       else {                                                 // If a path is detected on the right side, drive one square forward
         servoFront();
-        delay(500);
+        delay(300);
         forwardOneSquare();
         brake();
         checking = false;
@@ -443,7 +522,7 @@ void hugRightWall() {
     }
     else {                                                  // If a path is detected on the left side, turn to the right
       servoFront();
-      delay(200);
+      delay(300);
       turnRight();
       brake();
       checking = false;
@@ -508,7 +587,7 @@ void calibrateSensor()
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
   forward(253,255);
   delay(30);
-  forward(117,110);
+  forward(116,110);
   while (true)
   {
     qtr.calibrate();

@@ -51,7 +51,6 @@ void setup() {
   pinMode(triggerPin, OUTPUT);    
   pinMode(echoPin, INPUT);           
   Serial.begin(9600);                     // Open serial communication                          
-  bluetooth.begin(9600);                  // Open serial communication for the Bluetooth Serial Port
   pinMode(rightMotorPin1, OUTPUT);    
   pinMode(rightMotorPin2, OUTPUT);
   pinMode(leftMotorPin1, OUTPUT);     
