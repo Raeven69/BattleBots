@@ -16,19 +16,30 @@ void initNeoPixels()
     neoLed.begin();
 }
 
-// Function for setting the led colors according to the speed of the left and right wheel
 void neoDrive(int left, int right)
 {
-    // Calculate the color for the left and right leds according to the speed
-    uint32_t leftColor = neoLed.Color(left < 0 ? 255 : 255 - left, left < 0 ? 255 + left : 255, 0);
-    uint32_t rightColor = neoLed.Color(right < 0 ? 255 : 255 - right, right < 0 ? 255 + right : 255, 0);
-    // Apply the colors
-    neoLed.setPixelColor(0, leftColor);
-    neoLed.setPixelColor(1, rightColor);
-    neoLed.setPixelColor(2, rightColor);
-    neoLed.setPixelColor(3, leftColor);
+    uint32_t leftColor, rightColor;
+    // Bot is going in a straight line
+    if (left == right) {  
+        neoLed.clear();
+        neoLed.setPixelColor(2, neoLed.Color(255, 255, 255));
+        neoLed.setPixelColor(3, neoLed.Color(255, 255, 255)); 
+    } else if (left > right) {  
+        // Battlebot is turning left
+        neoLed.clear();
+        neoLed.setPixelColor(1, neoLed.Color(255, 165, 0));
+        neoLed.setPixelColor(2, neoLed.Color(255, 165, 0)); 
+      
+    } else {  
+        // Battlebot is turning right
+        neoLed.clear();
+        neoLed.setPixelColor(0, neoLed.Color(255, 165, 0));
+        neoLed.setPixelColor(3, neoLed.Color(255, 165, 0));
+    }
+
     neoLed.show();
 }
+
 
 // Function for flashing lights after finishing the course
 void neoFinish()
