@@ -1,7 +1,7 @@
 /************************************
 ***     INF1A Bot Eugene Krabs    ***
-***            27-3-2023          ***
-***            Versie 0.9         ***
+***            28-3-2023          ***
+***            Versie 0.95         ***
 ************************************/
 
 /************************************
@@ -184,7 +184,7 @@ void loop(){
       startSignal = true;
     }
   }
-  else if (starting == true){                                  // Start procedure
+  else if (starting == true){                             // Start procedure
     openGripper();                                        // Open Gripper
     start();                        
   }
@@ -199,9 +199,10 @@ void loop(){
   }
   else if(isTurnRight == true && onceTurnRight == false && starting == false && endReached == false){
     rightLight();                                         // Turnsignal
-    drive(200,0);                                   // Turn right
-    delay(350);                                           // Delay
-    moveStop();                                           // Stop turning
+    drive(200,200);                                   
+    delay(250);                                           // Delay
+    drive(210,-210);
+    delay(190);
     onceTurnRight = true;                                 // It Moved away from the line
   }
   else if(isTurnRight == true && onceTurnRight == true && starting == false && endReached == false){
@@ -334,13 +335,13 @@ void moveStop(){
 void turnRight(){
   readSensor();
   if(innerRight == 0 || innerLeft == 0){
-    drive(210,0);
+    drive(210,-210);
   }
   if(innerLeft == 1 || (innerRight == 1 && innerLeft == 1) || innerRight == 1){    
                                                           // if line is in the middle
-    moveStop();                                           // Stop
     isTurnRight = false;                                  // Stop turning
-    onceTurnRight = false;      
+    onceTurnRight = false;     
+    readSensor(); 
   }
 }
 
@@ -354,40 +355,43 @@ void turnLeft(){
     moveStop();                                            // Stop
     isTurnLeft = false;                                    // Stop turning
     onceTurnLeft = false;
+    readSensor(); 
   }
 }
 
 void followLine(){
   readSensor();
 
-  if(right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1){
+  if(right == 1 && innerRight == 1 && innerLeft == 1 && left == 1){
     drive(0,0);                                          // Stop
     delay(100);                                          // Delay
     drive(150,135);
-    delay(200);
+    delay(150);
     drive(0,0);
+    delay(70);
     readSensor();
 
     // Check if it stil sees all black
-    if((right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (outerRight == 1 && farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1)){
+    if((right == 1 && innerRight == 1 && innerLeft == 1 && left == 1)){
        drive(-170, -150);                                // Drive backwards to position cone
        delay(380);                                       // Delay
        drive(0,0);                                       // Stop
        openGripper();                                    // Open gripper
        delay(350);                                       // Delay
-       drive(-170, -150);                                // Drive away
-       delay(800);                                       // Delay
+       drive(-220, -200);                                // Drive away
+       delay(750);                                       // Delay
        endReached = true;                                // Reached the end
     }
   }
   // If detecting a path to the right
-  else if (((outerRight == 1 && farLeft == 0) && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1 && farLeft == 0 && outerLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && innerLeft == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (farRight == 1 && outerRight == 1 && farLeft == 0) || (outerRight == 1 && (innerRight == 1 || innerLeft == 1 || left == 1)  && farLeft == 0)){
+  else if (((outerRight == 1 && farLeft == 0) && (innerLeft == 1 || innerRight == 1)) || (outerRight == 1 && left == 1 && farLeft == 0 && outerLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (innerRight == 1 && right == 1 && farRight == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && innerLeft == 1 && outerRight == 1 && farLeft == 0) || (left == 1 && farRight == 1 && farLeft == 0) || (farRight == 1 && outerRight == 1 && farLeft == 0) || (outerRight == 1 && (innerRight == 1 || innerLeft == 1)  && farLeft == 0)){
     moveStop();                                          // Stop
     isTurnRight = true;                                  // Turn right
+    return;
   }
   // If line is centered
   else if (innerLeft == 1 && innerRight == 1){
-    drive(255,240);
+    drive(255,235);
   }
   // If line is slightly centered
   else if (innerLeft == 1 && innerRight == 0){
@@ -399,11 +403,11 @@ void followLine(){
   }
   // If line is slightly to the left
   else if (left == 1){
-    drive(185,255);
+    drive(115,255);
   }
   // If line is slightly to the right
   else if (right == 1){
-    drive(255,175);
+    drive(255,115);
   }
   // If line is to the left
   else if (farLeft == 1){
@@ -481,6 +485,8 @@ void start(){
     drive(0,0);
     closeGripper();
     delay(300);
+    drive(-200, -200);
+    delay(200);
     rotate(-99);
     drive(155,130);
     starting = false;
