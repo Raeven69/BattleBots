@@ -167,14 +167,7 @@ void setup(){
 void loop(){
   // Put your main code here, to run repeatedly:
   // Read lineSensor
-  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;   
-  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-  bool right = analogRead(lineSensorRight) > calibratedValue;
-  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-  bool left = analogRead(lineSensorLeft) > calibratedValue;
-  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+  readSensor();
   
   if(startSignal == false){
     int duration;
@@ -339,14 +332,7 @@ void moveStop(){
 }
 
 void turnRight(){
-  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-  bool right = analogRead(lineSensorRight) > calibratedValue;
-  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-  bool left = analogRead(lineSensorLeft) > calibratedValue;
-  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+  readSensor();
   if(innerRight == 0 || innerLeft == 0){
     drive(210,0);
   }
@@ -359,14 +345,7 @@ void turnRight(){
 }
 
 void turnLeft(){
-  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-  bool right = analogRead(lineSensorRight) > calibratedValue;
-  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-  bool left = analogRead(lineSensorLeft) > calibratedValue;
-  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+  readSensor();
   if(innerRight == 0 || innerLeft == 0){
     drive(0,210);
   }
@@ -379,14 +358,7 @@ void turnLeft(){
 }
 
 void followLine(){
-  bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-  bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-  bool right = analogRead(lineSensorRight) > calibratedValue;
-  bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-  bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-  bool left = analogRead(lineSensorLeft) > calibratedValue;
-  bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-  bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+  readSensor();
 
   if(right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1){
     drive(0,0);                                          // Stop
@@ -394,14 +366,7 @@ void followLine(){
     drive(150,135);
     delay(200);
     drive(0,0);
-    bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-    bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-    bool right = analogRead(lineSensorRight) > calibratedValue;
-    bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-    bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-    bool left = analogRead(lineSensorLeft) > calibratedValue;
-    bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-    bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+    readSensor();
 
     // Check if it stil sees all black
     if((right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1 && outerLeft == 1) || (outerRight == 1 && farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1) || (farRight == 1 && right == 1 && innerRight == 1 && innerLeft == 1 && left == 1 && farLeft == 1)){
@@ -469,26 +434,12 @@ void followLine(){
       rightLight();
       rotate(95);                                        // Turn right
       delay(120);
-      bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-      bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-      bool right = analogRead(lineSensorRight) > calibratedValue;
-      bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-      bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-      bool left = analogRead(lineSensorLeft) > calibratedValue;
-      bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-      bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+      readSensor();
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
         leftLight();
         rotate(-193);                                    // Turn far left
         delay(120);
-        bool outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
-        bool farRight = analogRead(lineSensorFarRight) > calibratedValue;
-        bool right = analogRead(lineSensorRight) > calibratedValue;
-        bool innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
-        bool innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
-        bool left = analogRead(lineSensorLeft) > calibratedValue;
-        bool farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
-        bool outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+        readSensor();
         if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
           leftLight();
           rotate(-92);                                   // Turn to the left to drive back
@@ -523,6 +474,7 @@ void start(){
     calibratedValue = getLineSensorSensitivity();
     Serial.println(calibratedValue);
   }
+  readSensor();
   if(outerLeft == 0 && farLeft == 0 && left == 0 && innerLeft == 0 && innerRight == 0 && right == 0 && farRight == 0 && outerRight == 0){     
                                                           // End of the black surface is reached
     delay(50);
@@ -542,4 +494,15 @@ void openGripper(){
 
 void closeGripper(){
   analogWrite(gripperPin, 154);
+}
+
+void readSensor(){
+  outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+  farRight = analogRead(lineSensorFarRight) > calibratedValue;
+  right = analogRead(lineSensorRight) > calibratedValue;
+  innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+  innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+  left = analogRead(lineSensorLeft) > calibratedValue;
+  farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+  outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
 }
