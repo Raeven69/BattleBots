@@ -85,8 +85,8 @@ void followLine()
     if (isOnLine)
     {
         // Calculate and set the speed of the left & right wheel based on how far the line is from the middle sensors
-        const int minSpeed = 70;
-        const int maxSpeed = 250;
+        const int minSpeed = 60;
+        const int maxSpeed = 240;
 
         int leftSpeed, rightSpeed;
 
