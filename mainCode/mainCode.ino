@@ -56,6 +56,9 @@ const int servoDelay = 300;
 boolean starting = true;
 boolean startSignal = false;
 boolean endReached = false;
+boolean isFinished = false;
+boolean wasAllOnLine = false;
+long lastAllOnLine = 0;
 
 
 
@@ -88,27 +91,21 @@ void setup() {
     strip.show();                         // Turn OFF all pixels
     strip.setBrightness(100);             // Brightness (0-255)
 
-  pinMode(ledPin, OUTPUT);                // Set ledPin to OUTPUT  
+  pinMode(ledPin, OUTPUT);                // Set ledPin to OUTPUT
+  grabberOpen();
+  calibrateSensor(); 
 }
 
 
 
 //Loop
 void loop() {
-  detectWall();
-  if(distance > 20 && distance < 30 && startSignal == false) {
-    delay(2800);
-    grabberOpen();
-    calibrateSensor();
-    startSignal = true;
-    started = true;
-  }
-  else if(endReached == false && started == true) {
-    hugRightWall();
-  }
-  else {
-    stopMoving();
-  }
+    if(!isFinished) {
+      hugRightWall();
+    }
+    else {
+      positionPawn();
+    }
 }
 
 
@@ -221,7 +218,7 @@ void forwardInMaze() {               // This function makes the battlebot drive 
     calibrateDrive();
   }
   counterLeft = 0;
-  while(counterLeft < 20) {
+  while(counterLeft < 66) {
     readRotationLeft();
     driveStraightForward();
   }
@@ -237,7 +234,7 @@ void startPosition() {                  // This function makes the battlebot dri
 
 void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
   forwardLight();
-  left = 244;
+  left = 241;
   right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -247,7 +244,7 @@ void driveForward() {                   // This function activates both motors a
 
 void driveStraightForward() {                   // This function activates both motors and will make the battlebot drive forward
   forwardLight();
-  left = 239;
+  left = 240;
   right = 232;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -538,6 +535,7 @@ void hugRightWall() {
           counterLeft = 0;
           counterRight = 0;
           turnAround();
+          checkFinished();
           brake();
           checking = false;
         }
@@ -545,6 +543,7 @@ void hugRightWall() {
           servoFront();
           turnLeft();
           brake();
+          checkFinished();
           checking = false;
         }
       }
@@ -553,6 +552,7 @@ void hugRightWall() {
         delay(servoDelay);
         forwardOneSquare();
         brake();
+        checkFinished();
         checking = false;
       }
     }
@@ -561,6 +561,7 @@ void hugRightWall() {
       delay(servoDelay);
       turnRight();
       brake();
+      checkFinished();
       checking = false;
     }
   }
@@ -665,4 +666,39 @@ void forward(int left, int right) {                   // This function activates
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
   digitalWrite(rightMotorPin1, LOW);   
+}
+
+// Function for checking whether the robot has finished the course
+void checkFinished() {
+    if (bool currentAllOnline = isAllOnLine()) {
+        // If the robot already was on all lines and more than one and a half seconds has passed, the robot is at the end of the course and thus finished
+        if (wasAllOnLine && lastAllOnLine > millis() - 1500)
+        {
+            isFinished = true;
+        }
+        // If it wasnt yet set the values for the next time we check whether the robot is finished
+        else
+        {
+            wasAllOnLine = true;
+            lastAllOnLine = millis();
+        }
+    }
+    // Reset the values incase the robot was on all black but no longer is, without half a second passing
+    else
+    {
+        wasAllOnLine = false;
+        lastAllOnLine = 0;
+    }
+}
+
+// Function for positioning the pawn at the end of the course
+void positionPawn() {
+    // Open the grapper and drive backwards for 1 second
+    forward(0, 0);
+    delay(200);
+    grabberOpen();
+    delay(200);
+    forward(-255, -255);
+    delay(1000);
+    forward(0, 0);
 }
