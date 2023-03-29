@@ -1,3 +1,11 @@
+/************************************
+***            INF1A              ***
+***            29-3-2023          ***
+***            Versie 0.1         ***
+***            Jannes             ***
+************************************/
+
+
 //Libraries
 #include <QTRSensors.h>
 #include <Adafruit_NeoPixel.h>               // Library used to control the NeoPixels
@@ -17,7 +25,7 @@ const int rightMotorPin1 = 11;               // Right motor backwards
 const int rightRotationPin = 10;             // Right wheel rotation sensor
 const int leftRotationPin = 12;              // Left wheel rotation sensor
 const int ledPin = 13;                       // Neopixels
-const int lineSensorOuterRight = A0;
+const int lineSensorOuterRight = A0;         // Line sensors
 const int lineSensorFarRight = A1;
 const int lineSensorRight = A2;
 const int lineSensorInnerRight = A3;
@@ -32,44 +40,59 @@ Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRB + NEO_KHZ800);
 
 
 //Variables
+
+// Grabber variables //
 bool grabberIsClosed = false;
+
+// Rotation sensor variables //
 int counterRight = 0;                     // Counts the amount of pulses detected by the rotation sensor
 int counterLeft = 0;
 int rotationStateRight;                   // Saves the rotation state
 int rotationStateLeft;
 int rotationLastStateRight;               // Remembers the last rotation state
 int rotationLastStateLeft;
+
+// Wheel speed variables //
 int left = 255;                           // Speed of the left motor
 int right = 255;                          // Speed of the right motor
+
+// NeoPixel variables
 unsigned long timeNe = 0;                 // Start value for millis Neopixel
+
+// Distance sensor variables
 unsigned long duration;                   // Time detected by the ultra sonic distance sensor
 double distance;                          // Distance in centimetres
-boolean checking = false;                 // Variable to check if the robot is checking for a path
-boolean started = false;                  // 
+
+// Line sensor variables //
 uint16_t sensorValues[8];                 // An array to store the current values of the sensors in
 bool isOnLine;                            // Variable to keep track of whether the robot is on the line or not
 uint16_t position;                        // Variable to store the position of the line relative to the sensors
 bool wasOnLines = false;                  // Calibration line counting variables
 long lastAllLines = 0;                    // Variable for keeping the last time the robot was on a black line
-const int safeTurnDistance = 25;
-const int servoDelay = 300;
-boolean starting = true;
-boolean startSignal = false;
 boolean endReached = false;
 boolean isFinished = false;
 boolean wasAllOnLine = false;
 long lastAllOnLine = 0;
 
+// Other variables //
+boolean checking = false;                 // Variable to check if the robot is checking for a path               
+const int safeTurnDistance = 25;
+const int servoDelay = 300;
 
 
 
 //Setup
 void setup() {
+  // Set the servo for the ultra sonic distance sensor to the front
   servoFront();
+ 
+  // Open serial communication
+  Serial.begin(9600);
+  
+  // Define inputs and outputs                     
   pinMode(servoPin, OUTPUT);
   pinMode(triggerPin, OUTPUT);    
-  pinMode(echoPin, INPUT);           
-  Serial.begin(9600);                     // Open serial communication                          
+  pinMode(echoPin, INPUT);                                     
   pinMode(rightMotorPin1, OUTPUT);    
   pinMode(rightMotorPin2, OUTPUT);
   pinMode(leftMotorPin1, OUTPUT);     
@@ -84,6 +107,8 @@ void setup() {
   pinMode(lineSensorLeft, INPUT);
   pinMode(lineSensorFarLeft, INPUT);
   pinMode(lineSensorOuterLeft, INPUT);
+
+  // Define the NeoPixels
   #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
     clock_prescale_set(clock_div_1);
   #endif
@@ -92,6 +117,8 @@ void setup() {
     strip.setBrightness(100);             // Brightness (0-255)
 
   pinMode(ledPin, OUTPUT);                // Set ledPin to OUTPUT
+  
+  // Start calibration
   grabberOpen();
   calibrateSensor(); 
 }
@@ -111,7 +138,12 @@ void loop() {
 
 
 
-//Functions
+// Functions
+
+
+// NeoPixel functions //
+
+// Light when driving forwards
 void forwardLight(){
   strip.clear();
   strip.setPixelColor(2, strip.Color(255, 255, 255));
@@ -121,6 +153,7 @@ void forwardLight(){
   strip.show();
 }
 
+// Light when driving backwards
 void backwardLight(){
    strip.clear();
   strip.setPixelColor(0, strip.Color(0, 255, 0));
@@ -130,15 +163,7 @@ void backwardLight(){
   strip.show();
 }
 
-void rotateLight(){
-  strip.clear();
-  strip.setPixelColor(0, strip.Color(0, 255, 0));
-  strip.setPixelColor(1, strip.Color(0, 255, 0));
-  strip.setPixelColor(2, strip.Color(0, 255, 0));
-  strip.setPixelColor(3, strip.Color(0, 255, 0));
-  strip.show();
-}
-
+// Light when turning left
 void leftLight(){
   strip.clear();
   strip.clear();
@@ -151,6 +176,7 @@ void leftLight(){
   strip.show();
 }
 
+// Light when turning right
 void rightLight(){
   strip.clear();
   if(millis() >= timeNe + 150){
@@ -162,6 +188,7 @@ void rightLight(){
   strip.show();
 }
 
+// Light when calibrating
 void calibrateLight(){                     
   strip.clear();
   if(millis() >= timeNe + 150){
@@ -175,8 +202,12 @@ void calibrateLight(){
   strip.show();
 }
 
-void detectWall() {                     // This function activates the ultra sonic distance sensor and it calculates the distance of the object 
-  digitalWrite(triggerPin, LOW);        // in front of it in centimetres
+
+// Ultra sonic distance sensor functions //
+
+// This function activates the ultra sonic distance sensor and it calculates the distance of the object in front of it in centimetres
+void detectWall() {                     
+  digitalWrite(triggerPin, LOW);        
   delayMicroseconds(5);
   digitalWrite(triggerPin, HIGH);
   delayMicroseconds(10);
@@ -188,7 +219,11 @@ void detectWall() {                     // This function activates the ultra son
   delay(10);
 }
 
-void forwardOneSquare() {               // This function makes the battlebot drive on square forward in the maze
+
+// Driving functions //
+
+// This function makes the battlebot drive one square forward in the maze
+void forwardOneSquare() {               
   while(counterLeft < 1) {
     readRotationLeft();
     calibrateDrive();
@@ -200,7 +235,8 @@ void forwardOneSquare() {               // This function makes the battlebot dri
   }
 }
 
-void forwardHalfSquare() {               // This function makes the battlebot drive on square forward in the maze
+// This function makes the battlebot drive half a square forward in the maze
+void forwardHalfSquare() {               
   while(counterLeft < 1) {
     readRotationLeft();
     calibrateDrive();
@@ -212,29 +248,23 @@ void forwardHalfSquare() {               // This function makes the battlebot dr
   }
 }
 
-void forwardInMaze() {               // This function makes the battlebot drive on square forward in the maze
+// This function makes the battlebot drive inside off the maze after calibrating
+void forwardInMaze() {               
   while(counterLeft < 1) {
     readRotationLeft();
     calibrateDrive();
   }
   counterLeft = 0;
-  while(counterLeft < 66) {
+  while(counterLeft < 59) {
     readRotationLeft();
     driveStraightForward();
   }
 }
 
-void startPosition() {                  // This function makes the battlebot drive drive to the right position in the square
-  while(counterLeft < 18) {
-    readRotationLeft();
-    driveForward();
-    started = true;
-  }
-}
-
-void driveForward() {                   // This function activates both motors and will make the battlebot drive forward
+// This function activates both motors and will make the battlebot drive forward
+void driveForward() {                   
   forwardLight();
-  left = 241;
+  left = 240;
   right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -242,9 +272,10 @@ void driveForward() {                   // This function activates both motors a
   digitalWrite(rightMotorPin1, LOW);  
 }
 
-void driveStraightForward() {                   // This function activates both motors and will make the battlebot drive forward
+// This function activates both motors and will make the battlebot drive forward while driving for a short amount of time
+void driveStraightForward() {                   
   forwardLight();
-  left = 240;
+  left = 239;
   right = 232;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -252,17 +283,8 @@ void driveStraightForward() {                   // This function activates both 
   digitalWrite(rightMotorPin1, LOW);  
 }
 
-void driveBackward() {                   // This function activates both motors and will make the battlebot drive backward
-  backwardLight();
-  left = 237;
-  right = 232;
-  analogWrite(leftMotorPin1, left);
-  digitalWrite(leftMotorPin2, LOW);
-  analogWrite(rightMotorPin1, right);
-  digitalWrite(rightMotorPin2, LOW);   
-}
-
-void brake() {                          // This function deactivates both motors and will make the battlebot stop driving for a short time
+// This function deactivates both motors and will make the battlebot stop driving for a short time
+void brake() {                          
   backwardLight();
   left = 0;
   right = 0;
@@ -273,7 +295,8 @@ void brake() {                          // This function deactivates both motors
   delay(250); 
 }
 
-void stopMoving() {                          // This function deactivates both motors and will make the battlebot stop driving
+// This function deactivates both motors and will make the battlebot stop driving
+void stopMoving() {                          
   backwardLight();
   left = 0;
   right = 0;
@@ -283,7 +306,11 @@ void stopMoving() {                          // This function deactivates both m
   digitalWrite(rightMotorPin1, LOW); 
 }
 
-void turnRight() {                      // This function will make the battlebot make a 90 degree right turn
+
+// Steering functions //
+
+// This function will make the battlebot make a 90 degree right turn
+void turnRight() {                      
   counterLeft = 0;
   while(counterLeft < 2){
     readRotationLeft();
@@ -306,29 +333,8 @@ void turnRight() {                      // This function will make the battlebot
   counterLeft = 0;
 }
 
-void driveInMaze() {                       // This function will make the battlebot make a 90 degree left turn
-  counterRight = 0;
-  while(counterRight < 2){
-    readRotationRight();
-    left = 255;
-    right = 255;
-    digitalWrite(leftMotorPin2, LOW);
-    digitalWrite(leftMotorPin1, LOW);
-    digitalWrite(rightMotorPin1, LOW);
-    analogWrite(rightMotorPin2, right);
-  }
-  counterRight = 0;
-  while(counterRight < 31) {
-    readRotationRight();
-    forwardsRight();
-  }
-  brake();
-  counterLeft = 0;
-  counterRight = 0;
-  forwardInMaze();
-}
-
-void turnLeft() {                       // This function will make the battlebot make a 90 degree left turn
+// This function will make the battlebot make a 90 degree left turn
+void turnLeft() {                       
   counterRight = 0;
   while(counterRight < 2){
     readRotationRight();
@@ -350,54 +356,27 @@ void turnLeft() {                       // This function will make the battlebot
   forwardHalfSquare();
 }
 
-void calibrateDrive() {                // This function will make both wheels spin at the maximum speed
-  forwardLight();
-  left = 255;
-  right = 255;
-  analogWrite(leftMotorPin2, left);
-  digitalWrite(leftMotorPin1, LOW);
-  analogWrite(rightMotorPin2, right);
-  digitalWrite(rightMotorPin1, LOW); 
-}
-
-void backwardsLeft() {                 // This function will make the left wheel turn backward
-  leftLight();
-  left = 220;
-  right = 220;
-  digitalWrite(leftMotorPin2, LOW);
-  analogWrite(leftMotorPin1, left);
-  digitalWrite(rightMotorPin2, LOW);
-  digitalWrite(rightMotorPin1, LOW);
-}
-
-void forwardsLeft() {                   // This function will make the left wheel turn forward
-  rightLight();
-  left = 220;
-  right = 220;
-  analogWrite(leftMotorPin2, right);
-  digitalWrite(leftMotorPin1, LOW);
-  digitalWrite(rightMotorPin2, LOW);
-  digitalWrite(rightMotorPin1, LOW);
-}
-
-void backwardsRight() {                 // This function will make the right wheel turn backward
-  rightLight();
-  left = 220;
-  right = 220;
-  digitalWrite(leftMotorPin2, LOW);
-  digitalWrite(leftMotorPin1, LOW);
-  analogWrite(rightMotorPin1, right);
-  digitalWrite(rightMotorPin2, LOW);
-}
-
-void forwardsRight() {                  // This function will make the right wheel turn forward
-  leftLight();
-  left = 220;
-  right = 220;
-  digitalWrite(leftMotorPin2, LOW);
-  digitalWrite(leftMotorPin1, LOW);
-  digitalWrite(rightMotorPin1, LOW);
-  analogWrite(rightMotorPin2, right);
+// This function will make the battlebot make a 90 degree left turn after calibrating
+void driveInMaze() {                       
+  counterRight = 0;
+  while(counterRight < 2){
+    readRotationRight();
+    left = 255;
+    right = 255;
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    analogWrite(rightMotorPin2, right);
+  }
+  counterRight = 0;
+  while(counterRight < 31) {
+    readRotationRight();
+    forwardsRight();
+  }
+  brake();
+  counterLeft = 0;
+  counterRight = 0;
+  forwardInMaze();
 }
 
 void turnAround() {                 // This function will make the battlebot make a 180 degree turn
@@ -467,7 +446,68 @@ void turnAround() {                 // This function will make the battlebot mak
   }
 }
 
-void readRotationRight() {              // This function will read the pulses of the right rotation sensor
+
+// Wheel functions //
+
+// This function will make both wheels spin at the maximum speed to prevent one wheel not turning
+void calibrateDrive() {                
+  forwardLight();
+  left = 255;
+  right = 255;
+  analogWrite(leftMotorPin2, left);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
+  digitalWrite(rightMotorPin1, LOW); 
+}
+
+// This function will make the left wheel turn backward
+void backwardsLeft() {                 
+  leftLight();
+  left = 220;
+  right = 220;
+  digitalWrite(leftMotorPin2, LOW);
+  analogWrite(leftMotorPin1, left);
+  digitalWrite(rightMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+}
+
+// This function will make the left wheel turn forward
+void forwardsLeft() {                   
+  rightLight();
+  left = 220;
+  right = 220;
+  analogWrite(leftMotorPin2, right);
+  digitalWrite(leftMotorPin1, LOW);
+  digitalWrite(rightMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+}
+
+void backwardsRight() {                 // This function will make the right wheel turn backward
+  rightLight();
+  left = 220;
+  right = 220;
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin1, right);
+  digitalWrite(rightMotorPin2, LOW);
+}
+
+// This function will make the right wheel turn forward
+void forwardsRight() {                  
+  leftLight();
+  left = 220;
+  right = 220;
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(leftMotorPin1, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
+}
+
+
+// Rotation Sensor functions //
+
+// This function will read the pulses of the right rotation sensor
+void readRotationRight() {              
   rotationStateRight = digitalRead(rightRotationPin);
   if(rotationStateRight != rotationLastStateRight) {
       counterRight++;   
@@ -476,7 +516,8 @@ void readRotationRight() {              // This function will read the pulses of
   Serial.println(counterRight);
 }
 
-void readRotationLeft() {               // This function will read the pulses of the left rotation sensor
+// This function will read the pulses of the left rotation sensor
+void readRotationLeft() {               
   rotationStateLeft = digitalRead(leftRotationPin);
   if(rotationStateLeft != rotationLastStateLeft) {
       counterLeft++;   
@@ -485,7 +526,11 @@ void readRotationLeft() {               // This function will read the pulses of
   Serial.println(counterLeft);
 }
 
-void servoLeft() {                   // This function will make the servo turn to the left 
+
+// Servo functions //
+
+// This function will make the servo turn to the left 
+void servoLeft() {                   
   // A pulse each 20ms
   digitalWrite(servoPin, HIGH);
   delayMicroseconds(2600); // Duration of the pusle in microseconds
@@ -494,7 +539,8 @@ void servoLeft() {                   // This function will make the servo turn t
   // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
-void servoFront() {                  // This function will make the servo turn to the front
+// This function will make the servo turn to the front
+void servoFront() {                  
   // A pulse each 20ms  
   digitalWrite(servoPin, HIGH);
   delayMicroseconds(1650); // Duration of the pusle in microseconds
@@ -503,7 +549,8 @@ void servoFront() {                  // This function will make the servo turn t
   // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
-void servoRight() {                   // This function will make the servo turn to the right
+// This function will make the servo turn to the right
+void servoRight() {                   
   // A pulse each 20ms
   digitalWrite(servoPin, HIGH);
   delayMicroseconds(600); // Duration of the pusle in microseconds
@@ -512,6 +559,26 @@ void servoRight() {                   // This function will make the servo turn 
   // Pulses duration: 600 - 0deg; 1650 - 90deg; 2600 - 180deg
 }
 
+//closes the grabber
+void grabberClosed() {
+  digitalWrite(grabberPin, HIGH);
+  delayMicroseconds(950); // Duration of the pusle in microseconds
+  digitalWrite(grabberPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+}
+
+// opens the grabber
+void grabberOpen() {
+  digitalWrite(grabberPin, HIGH);
+  delayMicroseconds(1650); // Duration of the pusle in microseconds
+  digitalWrite(grabberPin, LOW);
+  delayMicroseconds(18550); // 20ms - duration of the pusle
+}
+
+
+// Loop function //
+
+// This function will make the battle bot solve the maze
 void hugRightWall() {
   if(checking == false) {                                     // Check if the function is already running
     counterLeft = 0;                                          // Reset the left pulse count
@@ -570,21 +637,9 @@ void hugRightWall() {
   }
 }
 
-//closes the grabber
-void grabberClosed() {
-  digitalWrite(grabberPin, HIGH);
-  delayMicroseconds(950); // Duration of the pusle in microseconds
-  digitalWrite(grabberPin, LOW);
-  delayMicroseconds(18550); // 20ms - duration of the pusle
-}
 
-// opens the grabber
-void grabberOpen() {
-  digitalWrite(grabberPin, HIGH);
-  delayMicroseconds(1650); // Duration of the pusle in microseconds
-  digitalWrite(grabberPin, LOW);
-  delayMicroseconds(18550); // 20ms - duration of the pusle
-}
+// Line sensor functions //
+
 
 void updateLineData()
 {
@@ -601,6 +656,7 @@ void updateLineData()
   isOnLine = isCurrentlyOnLine;
 }
 
+
 bool isAllOnLine()
 {
   updateLineData();
@@ -616,6 +672,7 @@ bool isAllOnLine()
   return allSensors;
 }
 
+// This function makes the line sensor calibrate
 void calibrateSensor()
 {
   // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
@@ -624,7 +681,7 @@ void calibrateSensor()
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
   forward(253,255);
   delay(30);
-  forward(117,110);
+  forward(120,110);
   while (true)
   {
     qtr.calibrate();
@@ -661,7 +718,8 @@ void calibrateSensor()
   driveInMaze();
 }
 
-void forward(int left, int right) {                   // This function activates both motors and will make the battlebot drive forward
+// This function activates both motors and will make the battlebot drive forward
+void forward(int left, int right) {                   
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
