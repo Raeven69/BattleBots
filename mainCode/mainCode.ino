@@ -119,6 +119,11 @@ void setup() {
   pinMode(ledPin, OUTPUT);                // Set ledPin to OUTPUT
   
   // Start calibration
+  detectWall();
+  while(distance > safeTurnDistance){
+    detectWall();
+    stopMoving();
+  }
   grabberOpen();
   calibrateSensor(); 
 }
@@ -248,6 +253,19 @@ void forwardHalfSquare() {
   }
 }
 
+// This functions makes the battlebot drive forward after calibrating
+void calibrateForward() {
+  while(counterLeft < 1) {
+    readRotationLeft();
+    calibrateDrive();
+  }
+  counterLeft = 0;
+  while(counterLeft < 37) {
+    readRotationLeft();
+    driveCalibrateForward();
+  }
+}
+
 // This function makes the battlebot drive inside off the maze after calibrating
 void forwardInMaze() {               
   while(counterLeft < 1) {
@@ -255,10 +273,14 @@ void forwardInMaze() {
     calibrateDrive();
   }
   counterLeft = 0;
-  while(counterLeft < 59) {
+  while(counterLeft < 20) {
     readRotationLeft();
     driveStraightForward();
   }
+  /*while(counterLeft < 59) {
+    readRotationLeft();
+    driveStraightForward();
+  }*/
 }
 
 // This function activates both motors and will make the battlebot drive forward
@@ -277,6 +299,17 @@ void driveStraightForward() {
   forwardLight();
   left = 239;
   right = 232;
+  analogWrite(leftMotorPin2, left);
+  digitalWrite(leftMotorPin1, LOW);
+  analogWrite(rightMotorPin2, right);
+  digitalWrite(rightMotorPin1, LOW);  
+}
+
+// This function activates both motors and will make the battlebot drive forward while driving for a short amount of time
+void driveCalibrateForward() {                   
+  forwardLight();
+  left = 180;
+  right = 170;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
@@ -304,6 +337,16 @@ void stopMoving() {
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, LOW);
   digitalWrite(rightMotorPin1, LOW); 
+}
+
+void backUp() {
+  backwardLight();
+  left = 180;
+  right = 170;
+  analogWrite(leftMotorPin2, LOW);
+  digitalWrite(leftMotorPin1, left);
+  analogWrite(rightMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, right); 
 }
 
 
@@ -602,7 +645,6 @@ void hugRightWall() {
           counterLeft = 0;
           counterRight = 0;
           turnAround();
-          checkFinished();
           brake();
           checking = false;
         }
@@ -610,7 +652,6 @@ void hugRightWall() {
           servoFront();
           turnLeft();
           brake();
-          checkFinished();
           checking = false;
         }
       }
@@ -619,7 +660,6 @@ void hugRightWall() {
         delay(servoDelay);
         forwardOneSquare();
         brake();
-        checkFinished();
         checking = false;
       }
     }
@@ -628,8 +668,19 @@ void hugRightWall() {
       delay(servoDelay);
       turnRight();
       brake();
-      checkFinished();
       checking = false;
+    }
+    uint16_t position = qtr.readLineBlack(sensorValues);   
+    //stop when all sensors detect black    
+    if((sensorValues[0] > 700) && (sensorValues[1] > 700) && (sensorValues[2] > 700) && (sensorValues[3] > 700) && (sensorValues[4] > 700) && (sensorValues[5] > 700) && (sensorValues[6] > 700) && (sensorValues[7] > 700))   
+    {     
+      brake();         
+      grabberOpen();  
+      brake();
+      backUp();
+      delay(500);
+      brake();
+      delay(500000);
     }
   }
   else {
@@ -714,6 +765,8 @@ void calibrateSensor()
   }
   brake();
   delay(100);
+  calibrateForward();
+  brake();
   grabberClosed();
   driveInMaze();
 }
@@ -724,29 +777,6 @@ void forward(int left, int right) {
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
   digitalWrite(rightMotorPin1, LOW);   
-}
-
-// Function for checking whether the robot has finished the course
-void checkFinished() {
-    if (bool currentAllOnline = isAllOnLine()) {
-        // If the robot already was on all lines and more than one and a half seconds has passed, the robot is at the end of the course and thus finished
-        if (wasAllOnLine && lastAllOnLine > millis() - 1500)
-        {
-            isFinished = true;
-        }
-        // If it wasnt yet set the values for the next time we check whether the robot is finished
-        else
-        {
-            wasAllOnLine = true;
-            lastAllOnLine = millis();
-        }
-    }
-    // Reset the values incase the robot was on all black but no longer is, without half a second passing
-    else
-    {
-        wasAllOnLine = false;
-        lastAllOnLine = 0;
-    }
 }
 
 // Function for positioning the pawn at the end of the course
