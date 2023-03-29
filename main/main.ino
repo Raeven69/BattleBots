@@ -201,8 +201,8 @@ void loop(){
     rightLight();                                         // Turnsignal
     drive(200,200);                                   
     delay(250);                                           // Delay
-    drive(210,-210);
-    delay(190);
+    drive(240,-240);
+    delay(180);
     onceTurnRight = true;                                 // It Moved away from the line
   }
   else if(isTurnRight == true && onceTurnRight == true && starting == false && endReached == false){
@@ -437,12 +437,12 @@ void followLine(){
       delay(120);
       rightLight();
       rotate(95);                                        // Turn right
-      delay(120);
+      delay(270);
       readSensor();
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
         leftLight();
         rotate(-193);                                    // Turn far left
-        delay(120);
+        delay(270);
         readSensor();
         if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
           leftLight();
