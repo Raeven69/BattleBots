@@ -60,6 +60,13 @@ bool isAllOnLine()
     return allSensors;
 }
 
+// Function for checking whether the outer sensors are seeing a black line
+bool outerLinesDetected()
+{
+    updateLineData();
+    return sensorValues[0] < qtr.calibrationOn.maximum[0] - 100 && sensorValues[7] < qtr.calibrationOn.maximum[7];
+}
+
 // Function to calibrate the sensors
 void calibrateSensor()
 {

@@ -21,13 +21,25 @@ long lastAllOnLine = 0;
 bool wasAllOnLine = false;
 // Variable for storing whether the robot has finished the course
 bool isFinished = false;
-// Variable for keeping track of when the bot started it's journey
-long startTime = millis();
+// Variable for delaying drive when crossing a crossing
+long interval = 0;
 
 // Function for positioning the pawn at the end of the course
 void positionPawn()
 {
     // Open the grapper and drive backwards for 1 second
+    drive(0, 0);
+    delay(200);
+    while (isAllOnLine())
+    {
+        drive(-150, -150);
+    }
+    drive(0, 0);
+    delay(200);
+    while (!isAllOnLine())
+    {
+        drive(150, 150);
+    }
     drive(0, 0);
     delay(200);
     openGrapper();
@@ -42,7 +54,7 @@ void avoidObstacle()
 {
     rotate(60);
     drive(255, 255);
-    delay(300);
+    delay(400);
     drive(100, 255);
     delay(1000);
     drive(255, 255);
@@ -57,10 +69,13 @@ void avoidObstacle()
 void checkFinished()
 {
     if (bool currentAllOnline = isAllOnLine()) {
-        // If the robot already was on all lines and more than half a second has passed, the robot is at the end of the course and thus finished
-        if (wasAllOnLine && lastAllOnLine > millis() - 1000)
+        // If the robot already was on all lines and more than one second has passed, the robot is at the end of the course and thus finished
+        if (wasAllOnLine)
         {
-            isFinished = true;
+            if (lastAllOnLine > 0 && lastAllOnLine + 100 < millis())
+            {
+                isFinished = true;
+            }
         }
         // If it wasnt yet set the values for the next time we check whether the robot is finished
         else
@@ -85,18 +100,17 @@ void followLine()
     if (isOnLine)
     {
         // Calculate and set the speed of the left & right wheel based on how far the line is from the middle sensors
-        const int minSpeed = 60;
-        const int maxSpeed = 240;
+        const int minSpeed = 100;
+        const int maxSpeed = 255;
 
         int leftSpeed, rightSpeed;
-
-        if (position < 2500) {
+        if (position < 3000) {
             leftSpeed = (255 * (3500 - position)) / 3500;
             leftSpeed = max(minSpeed, leftSpeed);
             leftSpeed = min(maxSpeed, leftSpeed);
             rightSpeed = maxSpeed;
         }
-        else if (position > 4500) {
+        else if (position > 4000) {
             rightSpeed = (255 * (position - 3500)) / 3500;
             rightSpeed = max(minSpeed, rightSpeed);
             rightSpeed = min(maxSpeed, rightSpeed);
@@ -106,16 +120,15 @@ void followLine()
             leftSpeed = maxSpeed;
             rightSpeed = maxSpeed;
         }
-
         drive(leftSpeed, rightSpeed);
         // If the line is on the outer left of the robot, set the line direction memory to the left
-        if (position < 1000)
+        if (position < 2000)
         {
             lineDirection = "left";
             nextLineDetection = millis() + 1000;
         }
         // If the line is on the outer right of the robot, set the line direction memory to the right
-        else if (position > 6000)
+        else if (position > 5000)
         {
             lineDirection = "right";
             nextLineDetection = millis() + 1000;
@@ -167,10 +180,7 @@ void loop()
         else
         {
             followLine();
-            if (millis() > startTime + 10000)
-            {
-                checkFinished();
-            }
+            checkFinished();
         }
     }
     // If the robot is finished, position the pawn on the black square, and flash the NeoPixel leds for eternity
