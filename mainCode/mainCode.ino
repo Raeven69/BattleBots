@@ -51,6 +51,10 @@ int rotationStateRight;                   // Saves the rotation state
 int rotationStateLeft;
 int rotationLastStateRight;               // Remembers the last rotation state
 int rotationLastStateLeft;
+int leftRotationState;
+int leftRotationLastState;
+int rightRotationState;
+int rightRotationLastState;
 
 // Wheel speed variables //
 int left = 255;                           // Speed of the left motor
@@ -89,10 +93,6 @@ int calibrationTime = 40;
 boolean checking = false;                 // Variable to check if the robot is checking for a path               
 const int safeTurnDistance = 25;
 const int servoDelay = 300;
-int leftRotationState;
-int leftRotationLastState;
-int rightRotationState;
-int rightRotationLastState;
 bool moving = false;
 bool starting = true;
 
