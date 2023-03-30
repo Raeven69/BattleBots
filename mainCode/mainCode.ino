@@ -764,12 +764,6 @@ void hugRightWall() {
       brake();
       checking = false;
     }
-    uint16_t position = qtr.readLineBlack(sensorValues);   
-    //stop when all sensors detect black    
-    if((sensorValues[0] > 700) && (sensorValues[1] > 700) && (sensorValues[2] > 700) && (sensorValues[3] > 700) && (sensorValues[4] > 700) && (sensorValues[5] > 700) && (sensorValues[6] > 700) && (sensorValues[7] > 700))   
-    {     
-      positionPawn();
-    }
   }
   else {
     checking = false;
@@ -779,109 +773,6 @@ void hugRightWall() {
 
 // Line sensor functions //
 
-
-void checkFinished()
-{
-    if (bool currentAllOnline = isAllOnLine()) {
-        // If the robot already was on all lines and more than one and a half seconds has passed, the robot is at the end of the course and thus finished
-        if (wasAllOnLine && lastAllOnLine > millis() - 1500)
-        {
-            isFinished = true;
-        }
-        // If it wasnt yet set the values for the next time we check whether the robot is finished
-        else
-        {
-            wasAllOnLine = true;
-            lastAllOnLine = millis();
-        }
-    }
-    // Reset the values incase the robot was on all black but no longer is, without half a second passing
-    else
-    {
-        wasAllOnLine = false;
-        lastAllOnLine = 0;
-    }
-}
-
-
-void updateLineData()
-{
-  position = qtr.readLineBlack(sensorValues);
-  bool isCurrentlyOnLine = false;
-  for (int i = 0; i < 8; i++)
-  {
-    if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 100)
-    {
-      isCurrentlyOnLine = true;
-      break;
-    }
-  }
-  isOnLine = isCurrentlyOnLine;
-}
-
-
-bool isAllOnLine()
-{
-  updateLineData();
-  bool allSensors = true;
-  for (int i = 0; i < 8; i++)
-  {
-    if (sensorValues[i] < qtr.calibrationOn.maximum[i] - 100)
-    {
-      allSensors = false;
-      break;
-    }
-  }
-  return allSensors;
-}
-
-// This function makes the line sensor calibrate
-void calibrateSensor()
-{
-  // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
-  grabberOpen(); 
-  qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-  drive(253,255);
-  delay(30);
-  drive(119,110);
-  while (true)
-  {
-    qtr.calibrate();
-    if (isAllOnLine())
-    {
-      if (wasOnLines && lastAllLines > millis() - 2000)
-      {
-        while (true)
-        {
-          qtr.calibrate();
-          if (!isAllOnLine())
-          {
-            delay(250);
-            break;
-          }
-        }
-        break;
-      }
-      else
-      {
-        wasOnLines = true;
-        lastAllLines = millis();
-      }
-    }
-    else
-    {
-        wasOnLines = false;
-        lastAllLines = 0;
-    }
-  }
-  brake();
-  delay(100);
-  calibrateForward();
-  brake();
-  grabberClosed();
-  driveInMaze();
-}
 
 // This function activates both motors and will make the battlebot drive forward
 void drive(int left, int right){
