@@ -7,7 +7,7 @@
 
 
 //Libraries
-#include <QTRSensors.h>
+#include <QTRSensors.h>                      // Library used to control the line sensor
 #include <Adafruit_NeoPixel.h>               // Library used to control the NeoPixels
 
 QTRSensors qtr; 
@@ -73,11 +73,28 @@ boolean endReached = false;
 boolean isFinished = false;
 boolean wasAllOnLine = false;
 long lastAllOnLine = 0;
+int calibratedValue;
+boolean shouldCalibrate = true;
+bool outerRight;
+bool farRight;
+bool SRight;
+bool innerRight;
+bool innerLeft;
+bool SLeft;
+bool farLeft;
+bool outerLeft;
+int calibrationTime = 40;
 
 // Other variables //
 boolean checking = false;                 // Variable to check if the robot is checking for a path               
 const int safeTurnDistance = 25;
 const int servoDelay = 300;
+int leftRotationState;
+int leftRotationLastState;
+int rightRotationState;
+int rightRotationLastState;
+bool moving = false;
+bool starting = true;
 
 
 
@@ -124,20 +141,81 @@ void setup() {
     detectWall();
     stopMoving();
   }
+  delay(1000);
   grabberOpen();
-  calibrateSensor(); 
+  qtr.setTypeAnalog();                                    // Initialize linesSensor
+  qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);  // Initialize linesSensor 
 }
 
 
 
 //Loop
 void loop() {
-    if(!isFinished) {
-      hugRightWall();
+  readSensor();
+  if(starting == true){
+    start();
+    readSensor();
+  }
+  if(SRight == 1 && innerRight == 1 && innerLeft == 1 && SLeft == 1 && starting == false){
+    drive(0,0);                                          // Stop
+    delay(100);                                          // Delay
+    drive(150,135);
+    delay(150);
+    drive(0,0);
+    delay(70);
+    readSensor();
+
+    // Check if it stil sees all black
+    if((SRight == 1 && innerRight == 1 && innerLeft == 1 && SLeft == 1 && starting == false)){
+       drive(0,0);                                       // Stop
+       grabberOpen();                                    // Open gripper
+       delay(350);                                       // Delay
+       drive(-220, -200);                                // Drive away
+       delay(900);                                       // Delay
+       endReached = true;                                // Reached the end
+       while(endReached){
+        drive(0,0);
+       }
     }
-    else {
-      positionPawn();
-    }
+  }
+  else if (innerLeft == 1 && innerRight == 1 && starting == false){
+    drive(255,235);
+  }
+  // If line is slightly centered
+  else if (innerLeft == 1 && innerRight == 0 && starting == false){
+    drive(240,255);
+  }
+  // If line is slightly centered
+  else if (innerLeft == 0 && innerRight == 1 && starting == false){
+    drive(255,205);
+  }
+  // If line is slightly to the left
+  else if (SLeft == 1 && starting == false){
+    drive(135,255);
+  }
+  // If line is slightly to the right
+  else if (SRight == 1 && starting == false){
+    drive(255,115);
+  }
+  // If line is to the left
+  else if (farLeft == 1 && starting == false){
+    drive(0,255);
+  }
+  // If line is to the right
+  else if (farRight == 1 && starting == false){
+    drive(255,0);
+  }
+  // If line is far to the right
+  else if (outerRight == 1 && starting == false){
+    drive(255,0);
+  }
+  // If line is far to the left
+  else if (outerLeft == 1 && starting == false){
+    drive(0,255);
+  }
+  else{
+    hugRightWall();
+  }
 }
 
 
@@ -229,52 +307,52 @@ void detectWall() {
 
 // This function makes the battlebot drive one square forward in the maze
 void forwardOneSquare() {               
-  while(counterLeft < 1) {
-    readRotationLeft();
+  while(counterRight < 1) {
+    readRotationRight();
     calibrateDrive();
   }
-  counterLeft = 0;
-  while(counterLeft < 52) {
-    readRotationLeft();
+  counterRight = 0;
+  while(counterRight < 52) {
+    readRotationRight();
     driveForward();
   }
 }
 
 // This function makes the battlebot drive half a square forward in the maze
 void forwardHalfSquare() {               
-  while(counterLeft < 1) {
-    readRotationLeft();
+  while(counterRight < 1) {
+    readRotationRight();
     calibrateDrive();
   }
-  counterLeft = 0;
-  while(counterLeft < 29) {
-    readRotationLeft();
+  counterRight = 0;
+  while(counterRight < 29) {
+    readRotationRight();
     driveStraightForward();
   }
 }
 
 // This functions makes the battlebot drive forward after calibrating
 void calibrateForward() {
-  while(counterLeft < 1) {
-    readRotationLeft();
+  while(counterRight < 1) {
+    readRotationRight();
     calibrateDrive();
   }
-  counterLeft = 0;
-  while(counterLeft < 37) {
-    readRotationLeft();
+  counterRight = 0;
+  while(counterRight < 37) {
+    readRotationRight();
     driveCalibrateForward();
   }
 }
 
 // This function makes the battlebot drive inside off the maze after calibrating
 void forwardInMaze() {               
-  while(counterLeft < 1) {
-    readRotationLeft();
+  while(counterRight < 1) {
+    readRotationRight();
     calibrateDrive();
   }
-  counterLeft = 0;
-  while(counterLeft < 20) {
-    readRotationLeft();
+  counterRight = 0; 
+  while(counterRight < 20) {
+    readRotationRight();
     driveStraightForward();
   }
   /*while(counterLeft < 59) {
@@ -283,10 +361,36 @@ void forwardInMaze() {
   }*/
 }
 
+void positionAfterTurnAround() {
+  while(counterRight < 1) {
+    readRotationRight();
+    driveForward();
+  }
+  counterRight = 0;
+  while(counterRight < 8) {
+    readRotationRight();
+    driveForward();
+  }
+  counterRight = 0;
+}
+
+void startUpRight() {
+  counterRight = 0;
+  while(counterRight < 1){
+    readRotationRight();
+    left = 255;
+    right = 255;
+    digitalWrite(leftMotorPin2, LOW);
+    digitalWrite(leftMotorPin1, LOW);
+    digitalWrite(rightMotorPin1, LOW);
+    analogWrite(rightMotorPin2, right);
+  }
+}
+
 // This function activates both motors and will make the battlebot drive forward
 void driveForward() {                   
   forwardLight();
-  left = 240;
+  left = 238;
   right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -297,8 +401,8 @@ void driveForward() {
 // This function activates both motors and will make the battlebot drive forward while driving for a short amount of time
 void driveStraightForward() {                   
   forwardLight();
-  left = 239;
-  right = 232;
+  left = 240;
+  right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
   analogWrite(rightMotorPin2, right);
@@ -379,7 +483,7 @@ void turnRight() {
 // This function will make the battlebot make a 90 degree left turn
 void turnLeft() {                       
   counterRight = 0;
-  while(counterRight < 2){
+  while(counterRight < 1){
     readRotationRight();
     left = 255;
     right = 255;
@@ -402,7 +506,7 @@ void turnLeft() {
 // This function will make the battlebot make a 90 degree left turn after calibrating
 void driveInMaze() {                       
   counterRight = 0;
-  while(counterRight < 2){
+  while(counterRight < 1){
     readRotationRight();
     left = 255;
     right = 255;
@@ -453,12 +557,7 @@ void turnAround() {                 // This function will make the battlebot mak
     counterLeft = 0;
     servoFront();
     brake();
-    while(counterRight < 8) {
-      readRotationRight();
-      driveForward();
-    }
-    counterRight = 0;
-    counterLeft = 0; 
+    positionAfterTurnAround(); 
   }
   else {
     servoFront();
@@ -480,12 +579,7 @@ void turnAround() {                 // This function will make the battlebot mak
     counterLeft = 0;
     brake(); 
     servoFront();
-    while(counterRight < 8) {
-      readRotationRight();
-      driveForward();
-    }
-    counterRight = 0;
-    counterLeft = 0;  
+    positionAfterTurnAround();  
   }
 }
 
@@ -644,7 +738,7 @@ void hugRightWall() {
           delay(servoDelay);
           counterLeft = 0;
           counterRight = 0;
-          turnAround();
+          turnAround(); 
           brake();
           checking = false;
         }
@@ -674,13 +768,7 @@ void hugRightWall() {
     //stop when all sensors detect black    
     if((sensorValues[0] > 700) && (sensorValues[1] > 700) && (sensorValues[2] > 700) && (sensorValues[3] > 700) && (sensorValues[4] > 700) && (sensorValues[5] > 700) && (sensorValues[6] > 700) && (sensorValues[7] > 700))   
     {     
-      brake();         
-      grabberOpen();  
-      brake();
-      backUp();
-      delay(500);
-      brake();
-      delay(500000);
+      positionPawn();
     }
   }
   else {
@@ -690,6 +778,30 @@ void hugRightWall() {
 
 
 // Line sensor functions //
+
+
+void checkFinished()
+{
+    if (bool currentAllOnline = isAllOnLine()) {
+        // If the robot already was on all lines and more than one and a half seconds has passed, the robot is at the end of the course and thus finished
+        if (wasAllOnLine && lastAllOnLine > millis() - 1500)
+        {
+            isFinished = true;
+        }
+        // If it wasnt yet set the values for the next time we check whether the robot is finished
+        else
+        {
+            wasAllOnLine = true;
+            lastAllOnLine = millis();
+        }
+    }
+    // Reset the values incase the robot was on all black but no longer is, without half a second passing
+    else
+    {
+        wasAllOnLine = false;
+        lastAllOnLine = 0;
+    }
+}
 
 
 void updateLineData()
@@ -730,9 +842,9 @@ void calibrateSensor()
   grabberOpen(); 
   qtr.setTypeAnalog();
   qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-  forward(253,255);
+  drive(253,255);
   delay(30);
-  forward(120,110);
+  drive(119,110);
   while (true)
   {
     qtr.calibrate();
@@ -772,21 +884,116 @@ void calibrateSensor()
 }
 
 // This function activates both motors and will make the battlebot drive forward
-void forward(int left, int right) {                   
-  analogWrite(leftMotorPin2, left);
-  digitalWrite(leftMotorPin1, LOW);
-  analogWrite(rightMotorPin2, right);
-  digitalWrite(rightMotorPin1, LOW);   
+void drive(int left, int right){
+  if(moving == false && left < 150 && left > 0 && right < 150 && right > 0){
+    analogWrite(rightMotorPin1, 155);
+    analogWrite(leftMotorPin2, 155);
+    delay(15);
+    moving = true;
+  }
+  if(left < 0){
+      analogWrite(leftMotorPin2, 0);
+      analogWrite(leftMotorPin1, abs(left));
+  } 
+  else{
+      analogWrite(leftMotorPin2, left);
+      analogWrite(leftMotorPin1, 0);
+  }
+  if(right < 0){
+      analogWrite(rightMotorPin2, 0);
+      analogWrite(rightMotorPin1, abs(right));
+  } 
+  else{
+      analogWrite(rightMotorPin2, right);
+      analogWrite(rightMotorPin1, 0);
+  }
+  if(right == 0 && left == 0){
+    moving = false;
+  }
 }
 
 // Function for positioning the pawn at the end of the course
 void positionPawn() {
     // Open the grapper and drive backwards for 1 second
-    forward(0, 0);
+    drive(0, 0);
     delay(200);
     grabberOpen();
     delay(200);
-    forward(-255, -255);
+    drive(-255, -255);
     delay(1000);
-    forward(0, 0);
+    drive(0, 0);
+}
+
+int getLineSensorSensitivity(int margin = 80){           // Get Sensitivity from lineSensor
+    int totalSize = 0;
+    for (int i = 0; i < 8; i++){
+        totalSize += qtr.calibrationOn.maximum[i];
+    }
+    return (int)(totalSize / 8 - margin);
+}
+
+void start(){
+  if(shouldCalibrate)
+  {
+    int i;
+    for (i = 0; i < calibrationTime; i++)
+    {
+      drive(255,255);
+      delay(10);
+      drive(119,110);
+      qtr.calibrate();
+      delay(30);
+    }
+    Serial.println("");
+    Serial.println("Calibration complete");
+    calibratedValue = getLineSensorSensitivity();
+    Serial.println(calibratedValue);
+  }
+  readSensor();
+  Serial.println("Sensor: " + innerLeft);
+  if(SLeft == 0 && innerLeft == 0 && innerRight == 0 && SRight == 0){     
+                                                          // End of the black surface is reached
+    delay(50);
+    drive(0,0);
+    grabberClosed();
+    delay(300);
+    drive(-200, -200);
+    delay(250);
+    rotate(-89);
+    starting = false;
+  }
+  delay(250);
+  readSensor();
+}
+
+void readSensor(){
+  outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
+  farRight = analogRead(lineSensorFarRight) > calibratedValue;
+  SRight = analogRead(lineSensorRight) > calibratedValue;
+  innerRight = analogRead(lineSensorInnerRight) > calibratedValue;
+  innerLeft = analogRead(lineSensorInnerLeft) > calibratedValue;
+  SLeft = analogRead(lineSensorLeft) > calibratedValue;
+  farLeft = analogRead(lineSensorFarLeft) > calibratedValue;
+  outerLeft = analogRead(lineSensorOuterLeft) > calibratedValue;
+}
+
+void rotate(int rotation){
+    int counter = 0;
+    while(counter < (int)((135.0/360.0) * abs(rotation))){ 
+                                                          // 135.0 / 360.0
+        if(rotation > 0){
+            drive(170, -170);
+        }
+        else{
+            drive(-170, 170);
+        }
+        leftRotationState = digitalRead(leftRotationPin);
+        rightRotationState = digitalRead(rightRotationPin);
+        if (leftRotationState != leftRotationLastState || rightRotationState != rightRotationLastState){
+            counter++;
+        }
+        leftRotationLastState = leftRotationState;
+        rightRotationLastState = rightRotationState;
+    }
+    drive(0, 0);
 }
