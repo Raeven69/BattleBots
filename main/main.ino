@@ -7,8 +7,7 @@
 /************************************
 ***           Libraries           ***
 ************************************/
-#include <QTRSensors.h>
-#include <SoftwareSerial.h>
+#include <QTRSensors.h>                                   // Library for the linesensor
 #include <Adafruit_NeoPixel.h>                            // Library used to control the NeoPixels     
 
 /************************************
@@ -18,7 +17,7 @@
 const int sonarTrigger = 8;
 const int sonarEcho = 9;
 
-const int gripperPin = 10;                                // Set gripperPin to pin 10
+const int gripperPin = 10;
 
 QTRSensors qtr;
 
@@ -430,18 +429,18 @@ void followLine(){
     if (endReached == true){
       moveStop();
     }
-    else{
+    else{                                               // If bot doesn't see the line anymore
       drive(135,135);
       delay(300);
       drive(0,0);
       delay(120);
       rightLight();
-      rotate(95);                                        // Turn right
+      rotate(95);                                        // Turn right to really make sure that there is no line there
       delay(270);
       readSensor();
       if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
         leftLight();
-        rotate(-193);                                    // Turn far left
+        rotate(-193);                                    // Turn far left to see if there is a line to the left
         delay(270);
         readSensor();
         if(outerRight == 0 && farRight == 0 && right == 0 && innerRight == 0 && innerLeft == 0 && left == 0 && farRight == 0 && outerRight == 0){
@@ -462,11 +461,9 @@ void followLine(){
 
 //===[Calibration]=========================================
 void start(){
-  if(shouldCalibrate)
-  {
+  if(shouldCalibrate){
     int i;
-    for (i = 0; i < calibrationTime; i++)
-    {
+    for (i = 0; i < calibrationTime; i++){
       drive(200,200);
       delay(10);
       drive(110,85);
@@ -502,6 +499,7 @@ void closeGripper(){
   analogWrite(gripperPin, 154);
 }
 
+//===[Line sensor]==========================================
 void readSensor(){
   outerRight = analogRead(lineSensorOuterRight) > calibratedValue;
   farRight = analogRead(lineSensorFarRight) > calibratedValue;
