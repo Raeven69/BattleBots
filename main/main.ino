@@ -245,7 +245,6 @@ void stationaryLight(){
 
 void leftLight(){
   strip.clear();
-  strip.clear();
   if(millis() >= timeNe + 150){
     timeNe = millis() + 150;
     
