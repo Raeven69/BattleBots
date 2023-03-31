@@ -352,7 +352,7 @@ void positionAfterTurnAround(){
 // This function activates both motors and will make the battlebot drive forward
 void driveForward(){                   
   forwardLight();
-  left = 243;
+  left = 241;
   right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
@@ -363,7 +363,7 @@ void driveForward(){
 // This function activates both motors and will make the battlebot drive forward while driving for a short amount of time
 void driveStraightForward(){                   
   forwardLight();
-  left = 243;
+  left = 242;
   right = 233;
   analogWrite(leftMotorPin2, left);
   digitalWrite(leftMotorPin1, LOW);
