@@ -25,19 +25,16 @@ bool isFinished = false;
 long interval = 0;
 
 // Function for positioning the pawn at the end of the course
-void positionPawn()
-{
+void positionPawn(){
     // Open the grapper and drive backwards for 1 second
     drive(0, 0);
     delay(200);
-    while (isAllOnLine())
-    {
+    while (isAllOnLine()){
         drive(-150, -150);
     }
     drive(0, 0);
     delay(200);
-    while (!isAllOnLine())
-    {
+    while (!isAllOnLine()){
         drive(150, 150);
     }
     drive(0, 0);
@@ -50,8 +47,7 @@ void positionPawn()
 }
 
 // Function for avoiding obstacles
-void avoidObstacle()
-{
+void avoidObstacle(){
     rotate(60);
     drive(255, 255);
     delay(400);
@@ -59,46 +55,38 @@ void avoidObstacle()
     delay(1000);
     drive(255, 255);
     updateLineData();
-    while (!isOnLine)
-    {
+    while (!isOnLine){
         updateLineData();
     }
 }
 
 // Function for checking whether the robot has finished the course
-void checkFinished()
-{
+void checkFinished(){
     if (bool currentAllOnline = isAllOnLine()) {
         // If the robot already was on all lines and more than one second has passed, the robot is at the end of the course and thus finished
-        if (wasAllOnLine)
-        {
-            if (lastAllOnLine > 0 && lastAllOnLine + 100 < millis())
-            {
+        if (wasAllOnLine){
+            if (lastAllOnLine > 0 && lastAllOnLine + 100 < millis()){
                 isFinished = true;
             }
         }
         // If it wasnt yet set the values for the next time we check whether the robot is finished
-        else
-        {
+        else{
             wasAllOnLine = true;
             lastAllOnLine = millis();
         }
     }
     // Reset the values incase the robot was on all black but no longer is, without half a second passing
-    else
-    {
+    else{
         wasAllOnLine = false;
         lastAllOnLine = 0;
     }
 }
 
 // Function for following the black line
-void followLine()
-{
+void followLine(){
     // First update the sensor data
     updateLineData();
-    if (isOnLine)
-    {
+    if (isOnLine){
         // Calculate and set the speed of the left & right wheel based on how far the line is from the middle sensors
         const int minSpeed = 100;
         const int maxSpeed = 255;
@@ -122,39 +110,33 @@ void followLine()
         }
         drive(leftSpeed, rightSpeed);
         // If the line is on the outer left of the robot, set the line direction memory to the left
-        if (position < 2000)
-        {
+        if (position < 2000){
             lineDirection = "left";
             nextLineDetection = millis() + 1000;
         }
         // If the line is on the outer right of the robot, set the line direction memory to the right
-        else if (position > 5000)
-        {
+        else if (position > 5000){
             lineDirection = "right";
             nextLineDetection = millis() + 1000;
         }
         // If enough time has passed to clear the line direction memory, proceed to do so
-        else if (nextLineDetection < millis())
-        {
+        else if (nextLineDetection < millis()){
             lineDirection = "none";
         }
     }
     // If the line is no longer found, but according to the memory it is on the left, steer to the left and set NeoPixels accordingly
-    else if (lineDirection == "left")
-    {
+    else if (lineDirection == "left"){
         drive(50, 255);
         nextLineDetection = millis() + 1000;
     }
     // If it's supposedly on the right, steer to the right
-    else if (lineDirection == "right")
-    {
+    else if (lineDirection == "right"){
         drive(255, 50);
         nextLineDetection = millis() + 1000;
     }
 }
 
-void setup()
-{
+void setup(){
     // Initialize the different modules
     initEngine();
     initGrapper();
@@ -162,23 +144,18 @@ void setup()
     initLineSensor();
 }
 
-void loop()
-{
-    if (!isFinished)
-    {
+void loop(){
+    if (!isFinished){
         // If the robot is not finished but needs to start driving, proceed to do so
-        if (!isDriving)
-        {
+        if (!isDriving){
             drive(255, 255);
         }
         // If an object is found in front of the robot, avoid it
-        if (isBlocked())
-        {
+        if (isBlocked()){
             avoidObstacle();
         }
         // Otherwise try to follow the line while making sure the robot has not finished yet
-        else
-        {
+        else{
             followLine();
             checkFinished();
         }

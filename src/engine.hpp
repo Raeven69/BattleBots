@@ -32,8 +32,7 @@ long driveStart = 0;
 bool isDriving = false;
 
 // Initialize the engine pins and NeoPixels
-void initEngine()
-{
+void initEngine(){
     pinMode(leftMotorPin1, OUTPUT);
     pinMode(leftMotorPin2, OUTPUT);
     pinMode(rightMotorPin1, OUTPUT);
@@ -44,29 +43,24 @@ void initEngine()
 }
 
 // Function to set the engine speeds of the robot
-void drive(int left, int right)
-{
+void drive(int left, int right){
     // If the left speed is negative, set the left wheel to go backward
-    if (left < 0)
-    {
+    if (left < 0){
         analogWrite(leftMotorPin1, 0);
         analogWrite(leftMotorPin2, abs(left));
     }
     // Otherwise go forwards
-    else
-    {
+    else{
         analogWrite(leftMotorPin1, left);
         analogWrite(leftMotorPin2, 0);
     }
     // If the right speed is negative, set the right wheel to go backward
-    if (right < 0)
-    {
+    if (right < 0){
         analogWrite(rightMotorPin1, 0);
         analogWrite(rightMotorPin2, abs(right));
     }
     // Otherwise go forwards
-    else
-    {
+    else{
         analogWrite(rightMotorPin1, right);
         analogWrite(rightMotorPin2, 0);
     }
@@ -77,51 +71,40 @@ void drive(int left, int right)
 }
 
 // Function for driving in a straight line, uses the pulse counter for making sure both wheels turned the same amount of times
-void driveStraight()
-{
+void driveStraight(){
     leftState = digitalRead(leftRotationPin);
     rightState = digitalRead(rightRotationPin);
-    if (leftState != leftLastState)
-    {
+    if (leftState != leftLastState){
         leftLastState = leftState;
         leftCounter++;
     }
-    if (rightState != rightLastState)
-    {
+    if (rightState != rightLastState){
         rightLastState = rightState;
         rightCounter++;
     }
-    if (driveStart == 0)
-    {
+    if (driveStart == 0){
         driveStart = millis() + 10;
     }
-    if (leftCounter > rightCounter)
-    {
-        if (millis() > driveStart)
-        {
+    if (leftCounter > rightCounter){
+        if (millis() > driveStart){
             drive(70, 90);
         }
-        else
-        {
+        else{
             drive(230, 250);
         }
     }
-    else
-    {
-        if (millis() > driveStart)
-        {
+    else{
+        if (millis() > driveStart){
             drive(90, 70);
         }
-        else
-        {
+        else{
             drive(250, 230);
         }
     }
 }
 
 // Function for resetting pulse values for driving in a straight line
-void resetDriveStraight()
-{
+void resetDriveStraight(){
     rightState = 0;
     leftState = 0;
     rightLastState = 0;
@@ -133,27 +116,22 @@ void resetDriveStraight()
 }
 
 // Function to rotate the robot a certain amount of degrees
-void rotate(int rotation)
-{
+void rotate(int rotation){
     int counter = 0;
     // Calculate the amount of pulses for the rotation sensor based on degrees
     int pulses = (int)((135.0/360.0) * abs(rotation));
-    while (counter < pulses)
-    {
+    while (counter < pulses){
         // If the rotation is positive, rotate to the right, otherwise rotate to the left
-        if (rotation > 0)
-        {
+        if (rotation > 0){
             drive(150, -150);
         }
-        else
-        {
+        else{
             drive(-150, 150);
         }
         // Update the rotation states
         leftRotationState = digitalRead(leftRotationPin);
         rightRotationState = digitalRead(rightRotationPin);
-        if (leftRotationState != leftRotationLastState || rightRotationState != rightRotationLastState)
-        {
+        if (leftRotationState != leftRotationLastState || rightRotationState != rightRotationLastState){
             counter++;
         }
         leftRotationLastState = leftRotationState;

@@ -13,26 +13,22 @@ bool grapperClosed = false;
 const int grapperPin = 2;
 
 // Attach the grapper pin to the servo object
-void initGrapper()
-{
+void initGrapper(){
     grapper.attach(grapperPin);
 }
 
 // Open the grapper
-void openGrapper()
-{
+void openGrapper(){
     grapper.write(90);
     grapperClosed = false;
 }
 
 // Close the grapper
-void closeGrapper()
-{
+void closeGrapper(){
     grapper.write(45);
     grapperClosed = true;
 }
 
-void detachGrapper()
-{
+void detachGrapper(){
     grapper.detach();
 }

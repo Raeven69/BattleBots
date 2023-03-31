@@ -29,14 +29,11 @@ bool wasOnLines = false;
 long lastAllLines = 0;
 
 // Function for updating the sensor data and checking whether the robot is on the line or not
-void updateLineData()
-{
+void updateLineData(){
     position = qtr.readLineBlack(sensorValues);
     bool isCurrentlyOnLine = false;
-    for (int i = 0; i < 8; i++)
-    {
-        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 100)
-        {
+    for (int i = 0; i < 8; i++){
+        if (sensorValues[i] > qtr.calibrationOn.maximum[i] - 100){
             isCurrentlyOnLine = true;
             break;
         }
@@ -45,14 +42,11 @@ void updateLineData()
 }
 
 // Function for checking whether all sensors are seeing a black line
-bool isAllOnLine()
-{
+bool isAllOnLine(){
     updateLineData();
     bool allSensors = true;
-    for (int i = 0; i < 8; i++)
-    {
-        if (sensorValues[i] < qtr.calibrationOn.maximum[i] - 100)
-        {
+    for (int i = 0; i < 8; i++){
+        if (sensorValues[i] < qtr.calibrationOn.maximum[i] - 100){
             allSensors = false;
             break;
         }
@@ -61,47 +55,38 @@ bool isAllOnLine()
 }
 
 // Function for checking whether the outer sensors are seeing a black line
-bool outerLinesDetected()
-{
+bool outerLinesDetected(){
     updateLineData();
     return sensorValues[0] < qtr.calibrationOn.maximum[0] - 100 && sensorValues[7] < qtr.calibrationOn.maximum[7];
 }
 
 // Function to calibrate the sensors
-void calibrateSensor()
-{
+void calibrateSensor(){
     // First open the grapper, then drive forward over the calibration lines, then proceed to pick up the pawn and rotate towards the course
     openGrapper();
     qtr.setTypeAnalog();
     qtr.setSensorPins((const uint8_t[]){lineSensorOuterLeft, lineSensorFarLeft, lineSensorLeft, lineSensorInnerLeft, lineSensorInnerRight, lineSensorRight, lineSensorFarRight, lineSensorOuterRight}, 8);
-    while (true)
-    {
+    while (true){
         qtr.calibrate();
         driveStraight();
-        if (isAllOnLine())
-        {
-            if (wasOnLines && lastAllLines > millis() - 2250)
-            {
-                while (true)
-                {
+        if (isAllOnLine()){
+            if (wasOnLines && lastAllLines > millis() - 2250){
+                while (true){
                     qtr.calibrate();
                     driveStraight();
-                    if (!isAllOnLine())
-                    {
+                    if (!isAllOnLine()){
                         delay(250);
                         break;
                     }
                 }
                 break;
             }
-            else
-            {
+            else{
                 wasOnLines = true;
                 lastAllLines = millis();
             }
         }
-        else
-        {
+        else{
             wasOnLines = false;
             lastAllLines = 0;
         }
@@ -113,8 +98,7 @@ void calibrateSensor()
 }
 
 // Initialize the line sensor pins and start calibrating
-void initLineSensor()
-{
+void initLineSensor(){
     pinMode(lineSensorOuterRight, INPUT);
     pinMode(lineSensorFarRight, INPUT);
     pinMode(lineSensorRight, INPUT);
